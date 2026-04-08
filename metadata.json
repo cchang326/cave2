@@ -1,0 +1,5 @@
+{
+  "name": "Cave2",
+  "description": "A digital implementation of the solo board game Caverna: Cave vs Cave with Era II expansion",
+  "requestFramePermissions": []
+}

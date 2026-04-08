@@ -1,0 +1,89 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Information about a user.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string", "format": "uri" },
+        "lastLogin": { "type": "string", "format": "date-time" },
+        "role": { "type": "string", "enum": ["admin", "user"] }
+      },
+      "required": ["email", "displayName", "lastLogin"]
+    },
+    "GameSave": {
+      "title": "Game Save",
+      "description": "A saved game state for a user.",
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "object",
+          "description": "The full GameState object."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The time when the game was last saved."
+        },
+        "isGameOver": {
+          "type": "boolean",
+          "description": "Whether the game is over."
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "round": { "type": "integer" },
+            "turn": { "type": "integer" },
+            "score": { "type": "integer" }
+          },
+          "required": ["round", "turn", "score"]
+        }
+      },
+      "required": ["state", "updatedAt", "isGameOver", "metadata"]
+    },
+    "GameLog": {
+      "title": "Game Log",
+      "description": "A record of a finished game for high scores.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "gameId": { "type": "string" },
+        "score": { "type": "integer" },
+        "gameState": { "type": "object" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "cheatsUsed": { "type": "boolean" }
+      },
+      "required": ["userId", "gameId", "score", "gameState", "timestamp", "cheatsUsed"]
+    },
+    "GlobalStats": {
+      "title": "Global Stats",
+      "description": "Aggregated statistics for the application.",
+      "type": "object",
+      "properties": {
+        "visits": { "type": "integer" },
+        "gamesFinished": { "type": "integer" }
+      },
+      "required": ["visits", "gamesFinished"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile document."
+    },
+    "/users/{userId}/gameSaves/{slotId}": {
+      "schema": "GameSave",
+      "description": "A collection of game saves for a specific user."
+    },
+    "/game_logs/{logId}": {
+      "schema": "GameLog",
+      "description": "Finished game records for high scores."
+    },
+    "/stats/global": {
+      "schema": "GlobalStats",
+      "description": "Global statistics document."
+    }
+  }
+}

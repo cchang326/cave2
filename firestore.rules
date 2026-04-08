@@ -1,0 +1,160 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - email: string (required)
+    //   - displayName: string (required)
+    //   - photoURL: string (optional)
+    //   - lastLogin: timestamp (required)
+    //   - role: string (optional, 'admin' | 'user')
+    //
+    // Collection: users/{userId}/gameSaves
+    // Document ID: {slotId}
+    // Fields:
+    //   - state: map (required)
+    //   - updatedAt: timestamp (required)
+    //   - isGameOver: bool (required)
+    //   - metadata: map (required)
+    //
+    // Collection: game_logs
+    // Document ID: {logId}
+    // Fields:
+    //   - userId: string (required)
+    //   - gameId: string (required)
+    //   - score: int (required)
+    //   - gameState: map (required)
+    //   - timestamp: timestamp (required)
+    //   - cheatsUsed: bool (required)
+    //
+    // Collection: stats
+    // Document ID: global
+    // Fields:
+    //   - visits: int (required)
+    //   - gamesFinished: int (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "chengchang@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'displayName', 'lastLogin']) &&
+             data.email is string && data.email.size() < 256 &&
+             data.displayName is string && data.displayName.size() < 100 &&
+             data.lastLogin is timestamp &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() < 2048)) &&
+             (!('role' in data) || data.role in ['admin', 'user']);
+    }
+
+    function isValidGameSave(data) {
+      return data.keys().hasAll(['state', 'updatedAt', 'isGameOver', 'metadata']) &&
+             data.state is map &&
+             data.updatedAt is timestamp &&
+             data.isGameOver is bool &&
+             data.metadata is map &&
+             data.metadata.keys().hasAll(['round', 'turn', 'score']) &&
+             data.metadata.round is int &&
+             data.metadata.turn is int &&
+             data.metadata.score is int;
+    }
+
+    function isValidGameLog(data) {
+      return data.keys().hasAll(['userId', 'gameId', 'score', 'gameState', 'timestamp', 'cheatsUsed']) &&
+             data.userId is string &&
+             data.gameId is string &&
+             data.score is int &&
+             data.gameState is map &&
+             data.timestamp is timestamp &&
+             data.cheatsUsed is bool;
+    }
+
+    function isValidGlobalStats(data) {
+      return data.keys().hasOnly(['visits', 'gamesFinished']) &&
+             data.visits is int && data.visits >= 0 &&
+             data.gamesFinished is int && data.gamesFinished >= 0;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      // Users can only read their own profile, unless they are admin
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Users can create/update their own profile
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && 
+                      (!('role' in request.resource.data) || request.resource.data.role == 'user' || isAdmin());
+      
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && 
+                      (request.resource.data.role == resource.data.role || isAdmin());
+
+      match /gameSaves/{slotId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create, update: if isOwner(userId) && isValidGameSave(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    match /game_logs/{logId} {
+      // Anyone can read high scores for leaderboard
+      allow read: if true;
+      
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid &&
+                      isValidGameLog(request.resource.data);
+      
+      allow update, delete: if (isAuthenticated() && resource.data.userId == request.auth.uid && 
+                                (request.method == 'DELETE' || (request.resource.data.userId == request.auth.uid && isValidGameLog(request.resource.data)))) || 
+                               isAdmin();
+    }
+
+    match /stats/{statId} {
+      // Anyone can read global stats
+      allow read: if true;
+      
+      // Allow anyone to initialize the global stats doc with starting values
+      allow create: if (statId == 'global' && 
+                        request.resource.data.visits == 1 && 
+                        request.resource.data.gamesFinished == 0) || isAdmin();
+      
+      // Only admins can delete stats documents
+      allow delete: if isAdmin();
+      
+      // Anyone can increment the stats, but only by 1 at a time and only these specific fields
+      allow update: if (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['visits', 'gamesFinished'])) &&
+                       isValidGlobalStats(request.resource.data) &&
+                       (
+                         (request.resource.data.visits == resource.data.visits + 1 && request.resource.data.gamesFinished == resource.data.gamesFinished) ||
+                         (request.resource.data.gamesFinished == resource.data.gamesFinished + 1 && request.resource.data.visits == resource.data.visits) ||
+                         (request.resource.data.visits == resource.data.visits + 1 && request.resource.data.gamesFinished == resource.data.gamesFinished + 1)
+                       );
+    }
+    
+    // Default deny
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}
