@@ -12,6 +12,7 @@ interface Props {
   cave: CaveSpace[];
   walls: string[];
   isSelectable?: boolean;
+  isDrafting?: boolean;
   selectedRoomId?: string;
   showIconicDescription?: boolean;
   highlightFurnishable: boolean;
@@ -81,6 +82,7 @@ export const CentralDisplay: React.FC<Props> = ({
   cave,
   walls,
   isSelectable = false, 
+  isDrafting = false,
   selectedRoomId, 
   showIconicDescription = true,
   highlightFurnishable,
@@ -89,25 +91,8 @@ export const CentralDisplay: React.FC<Props> = ({
   onToggleHighlight,
   onToggleFixTileLocations
 }) => {
-  const canAfford = (tile: RoomTile): boolean => {
-    return Object.entries(tile.cost).every(([good, amount]) => {
-      return (goods[good as keyof GoodsState] || 0) >= (amount as number);
-    });
-  };
-
-  const hasCompatibleSpace = (tile: RoomTile): boolean => {
-    return cave.some(space => 
-      (space.state === 'EMPTY' || space.state === 'CROSSED_PICKAXES') && 
-      isValidRoomPlacement(space, walls, tile.wallRequirement)
-    );
-  };
-
   const isFurnishable = (tile: RoomTile): boolean => {
-    // Basic affordance and space checks
-    if (!canAfford(tile) || !hasCompatibleSpace(tile)) return false;
-
     // Rule: You must always have more orange Rooms than blue Rooms.
-    // You may not build a blue Room if you would have an equal number of orange and blue Rooms.
     if (tile.color === 'blue') {
       const orangeRooms = cave.filter(s => (s.state === 'FURNISHED' || s.state === 'ENTRANCE') && s.tile?.color === 'orange').length;
       const blueRooms = cave.filter(s => s.state === 'FURNISHED' && s.tile?.color === 'blue').length;
@@ -117,7 +102,24 @@ export const CentralDisplay: React.FC<Props> = ({
       }
     }
 
-    return true;
+    if (isDrafting) {
+      return cave.some(space => 
+        (space.state === 'EMPTY' || space.state === 'CROSSED_PICKAXES') && 
+        isValidRoomPlacement(space, walls, tile.wallRequirement)
+      );
+    }
+
+    // Basic affordance and space checks
+    const canAfford = Object.entries(tile.cost).every(([good, amount]) => {
+      return (goods[good as keyof GoodsState] || 0) >= (amount as number);
+    });
+
+    const hasCompatibleSpace = cave.some(space => 
+      (space.state === 'EMPTY' || space.state === 'CROSSED_PICKAXES') && 
+      isValidRoomPlacement(space, walls, tile.wallRequirement)
+    );
+
+    return canAfford && hasCompatibleSpace;
   };
 
   return (

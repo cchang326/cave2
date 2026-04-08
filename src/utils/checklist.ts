@@ -3,6 +3,8 @@ import { ChecklistItem, ActionBoardState, CaveSpace } from '../types/game';
 export function generateChecklistForAction(actionId: string, board: ActionBoardState, cave: CaveSpace[]): ChecklistItem[] {
   let items: ChecklistItem[] = [];
 
+  const isEraII = board.totalRounds === 11;
+
   switch (actionId) {
     case 'cultivation':
       items = [
@@ -10,12 +12,18 @@ export function generateChecklistForAction(actionId: string, board: ActionBoardS
         { id: 'c2', text: 'Gain 2 Emmer', actionType: 'GAIN', optional: true, status: 'TODO', data: { goods: { emmer: 2 } } },
         { id: 'c3', text: 'Gain 1 Flax', actionType: 'GAIN', optional: true, status: 'TODO', data: { goods: { flax: 1 } } }
       ];
+      if (isEraII) {
+        items.push({ id: 'c_era2', text: 'Era II: Gain 1 Wood', actionType: 'GAIN', optional: true, status: 'TODO', data: { goods: { wood: 1 } } });
+      }
       break;
     case 'undergrowth':
       items = [
         { id: 'u1', text: 'Activate 1 orange room', actionType: 'ROOM_ACTION', optional: true, status: 'TODO', data: { count: 1 } },
         { id: 'u2', text: 'Gain 2 Wood', actionType: 'GAIN', optional: true, status: 'TODO', data: { goods: { wood: 2 } } }
       ];
+      if (isEraII) {
+        items.push({ id: 'u_era2', text: 'Era II: Gain 2 Weapons', actionType: 'GAIN', optional: true, status: 'TODO', data: { goods: { weapons: 2 } } });
+      }
       break;
     case 'excavation':
       items = [
@@ -34,6 +42,9 @@ export function generateChecklistForAction(actionId: string, board: ActionBoardS
         },
         { id: 'e3', text: 'Gain 1 Stone', actionType: 'GAIN', optional: true, status: 'TODO', data: { goods: { stone: 1 } } }
       ];
+      if (isEraII) {
+        items.push({ id: 'e_era2', text: 'Era II: Gain 1 Emmer', actionType: 'GAIN', optional: true, status: 'TODO', data: { goods: { emmer: 1 } } });
+      }
       break;
     case 'housework':
       items = [
@@ -52,6 +63,9 @@ export function generateChecklistForAction(actionId: string, board: ActionBoardS
           }
         }
       ];
+      if (isEraII) {
+        items.push({ id: 'h_era2', text: 'Era II: Gain 1 Stone', actionType: 'GAIN', optional: true, status: 'TODO', data: { goods: { stone: 1 } } });
+      }
       break;
     case 'furnishing':
       items = [
@@ -146,6 +160,64 @@ export function generateChecklistForAction(actionId: string, board: ActionBoardS
       items = [
         { id: 'r1', text: 'Build a wall', actionType: 'BUILD_WALL', optional: true, status: 'TODO', data: { count: 1 } },
         { id: 'r2', text: 'Furnish a cavern (pay room cost only)', actionType: 'FURNISH', optional: true, status: 'TODO', data: { count: 1 } }
+      ];
+      break;
+    case 'decoration':
+      items = [
+        {
+          id: 'dec_choice',
+          text: 'Decoration Choice',
+          status: 'TODO',
+          actionType: 'CHOICE',
+          optional: true,
+          data: {
+            options: [
+              { label: 'Pay 5 Food to Furnish', cost: { food: 5 }, items: [{ id: 'dec1', text: 'Pay 5 Food to Furnish', actionType: 'FURNISH', status: 'TODO', data: { count: 1, payBefore: { food: 5 } } }] },
+              { label: 'Pay 1 Gold to Furnish', cost: { gold: 1 }, items: [{ id: 'dec2', text: 'Pay 1 Gold to Furnish', actionType: 'FURNISH', status: 'TODO', data: { count: 1, payBefore: { gold: 1 } } }] }
+            ]
+          }
+        }
+      ];
+      break;
+    case 'arms_trade':
+      items = [
+        {
+          id: 'arms_choice',
+          text: 'Arms Trade Choice',
+          status: 'TODO',
+          actionType: 'CHOICE',
+          optional: true,
+          data: {
+            options: [
+              { label: 'Pay 3 Gold to gain 4 Weapons and 1 Donkey', cost: { gold: 3 }, items: [{ id: 'arms1', text: 'Pay 3 Gold to gain 4 Weapons and 1 Donkey', actionType: 'GAIN', status: 'TODO', data: { payBefore: { gold: 3 }, goods: { weapons: 4, donkey: 1 } } }] },
+              { label: 'Pay 3 Gold to gain 4 Weapons and 1 Wood', cost: { gold: 3 }, items: [{ id: 'arms2', text: 'Pay 3 Gold to gain 4 Weapons and 1 Wood', actionType: 'GAIN', status: 'TODO', data: { payBefore: { gold: 3 }, goods: { weapons: 4, wood: 1 } } }] }
+            ]
+          }
+        }
+      ];
+      break;
+    case 'interior_design':
+      items = [
+        { id: 'id1', text: 'Excavate once', actionType: 'EXCAVATE', optional: true, status: 'TODO', data: { count: 1 } },
+        { id: 'id2', text: 'Build a wall', actionType: 'BUILD_WALL', optional: true, status: 'TODO', data: { count: 1 } }
+      ];
+      break;
+    case 'weekly_market':
+      items = [
+        {
+          id: 'wm_choice',
+          text: 'Weekly Market Choice',
+          status: 'TODO',
+          actionType: 'CHOICE',
+          optional: true,
+          data: {
+            options: [
+              { label: 'Activate 2 orange rooms', cost: {}, items: [{ id: 'wm1', text: 'Activate 2 orange rooms', actionType: 'ROOM_ACTION', status: 'TODO', data: { count: 2 } }] },
+              { label: 'Pay 3 Donkeys to gain 6 Food', cost: { donkey: 3 }, items: [{ id: 'wm2', text: 'Pay 3 Donkeys to gain 6 Food', actionType: 'GAIN', status: 'TODO', data: { payBefore: { donkey: 3 }, goods: { food: 6 } } }] },
+              { label: 'Pay 2 Gold to gain 6 Food', cost: { gold: 2 }, items: [{ id: 'wm3', text: 'Pay 2 Gold to gain 6 Food', actionType: 'GAIN', status: 'TODO', data: { payBefore: { gold: 2 }, goods: { food: 6 } } }] }
+            ]
+          }
+        }
       ];
       break;
     default:

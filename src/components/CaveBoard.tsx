@@ -39,11 +39,18 @@ export const CaveBoard: React.FC<Props> = ({
   children
 }) => {
   // Group into a dynamic grid for display
+  const minRow = Math.min(...cave.map(s => s.row), 0);
   const maxRow = Math.max(...cave.map(s => s.row), 4);
+  const minCol = Math.min(...cave.map(s => s.col), 0);
   const maxCol = Math.max(...cave.map(s => s.col), 2);
   
-  const grid = Array.from({ length: maxRow + 1 }, (_, row) => 
-    Array.from({ length: maxCol + 1 }, (_, col) => {
+  const rowCount = maxRow - minRow + 1;
+  const colCount = maxCol - minCol + 1;
+
+  const grid = Array.from({ length: rowCount }, (_, rIdx) => 
+    Array.from({ length: colCount }, (_, cIdx) => {
+      const row = rIdx + minRow;
+      const col = cIdx + minCol;
       return cave.find(c => c.row === row && c.col === col) || null;
     })
   );
@@ -54,8 +61,8 @@ export const CaveBoard: React.FC<Props> = ({
       <div 
         className="grid gap-2 w-full"
         style={{ 
-          gridTemplateColumns: `repeat(${maxCol + 1}, 8rem) 1fr`,
-          gridTemplateRows: `repeat(${maxRow + 1}, 8rem)`
+          gridTemplateColumns: `repeat(${colCount}, 8rem) 1fr`,
+          gridTemplateRows: `repeat(${rowCount}, 8rem)`
         }}
       >
         {children && (
@@ -77,24 +84,32 @@ export const CaveBoard: React.FC<Props> = ({
           const rightWallId = `${space.row},${space.col}-${space.row},${space.col + 1}`;
           const bottomWallId = `${space.row},${space.col}-${space.row + 1},${space.col}`;
           
-          const hasTopNeighbor = space.row > 0 && grid[space.row - 1][space.col] !== null;
-          const hasBottomNeighbor = space.row < maxRow && grid[space.row + 1][space.col] !== null;
-          const hasLeftNeighbor = space.col > 0 && grid[space.row][space.col - 1] !== null;
-          const hasRightNeighbor = space.col < maxCol && grid[space.row][space.col + 1] !== null;
+          const gridRow = space.row - minRow;
+          const gridCol = space.col - minCol;
+
+          const hasTopNeighbor = space.row > minRow && grid[gridRow - 1][gridCol] !== null;
+          const hasBottomNeighbor = space.row < maxRow && grid[gridRow + 1][gridCol] !== null;
+          
+          // Era I and Era II boards are separated by a gap, EXCEPT at the entrance (row 3)
+          const isGapRight = space.col === -1 && space.row !== 3;
+          const isGapLeft = space.col === 0 && space.row !== 3;
+
+          const hasLeftNeighbor = space.col > minCol && grid[gridRow][gridCol - 1] !== null && !isGapLeft;
+          const hasRightNeighbor = space.col < maxCol && grid[gridRow][gridCol + 1] !== null && !isGapRight;
 
           const hasRightWall = walls.includes(rightWallId);
           const hasBottomWall = walls.includes(bottomWallId);
 
           const isTopPerimeter = !hasTopNeighbor && !space.openSides?.includes('top');
-          const isBottomPerimeter = !hasBottomNeighbor && !space.openSides?.includes('bottom');
-          const isLeftPerimeter = !hasLeftNeighbor && !(space.row === 3 && space.col === 0) && !space.openSides?.includes('left'); // Entrance exception
+          const isBottomPerimeter = !hasBottomNeighbor && !(space.row === 3 && space.col === -1) && !space.openSides?.includes('bottom');
+          const isLeftPerimeter = !hasLeftNeighbor && !(space.row === 3 && space.col === 0) && !space.openSides?.includes('left');
           const isRightPerimeter = !hasRightNeighbor && !space.openSides?.includes('right');
 
           return (
             <div 
               key={space.id} 
               className="relative w-32 h-32 z-10"
-              style={{ gridRow: space.row + 1, gridColumn: space.col + 1 }}
+              style={{ gridRow: gridRow + 1, gridColumn: gridCol + 1 }}
             >
               {/* Perimeter Walls */}
               {isTopPerimeter && <div className="absolute -top-2 left-0 right-0 h-2 bg-stone-950 rounded-full shadow-md z-20" />}
@@ -121,6 +136,11 @@ export const CaveBoard: React.FC<Props> = ({
                 {isActivated && (
                   <div className="absolute bottom-0 left-0 right-0 bg-stone-800/95 border-t border-stone-600 py-0.5 flex items-center justify-center pointer-events-none z-20 rounded-b-lg">
                     <span className="text-stone-400 text-[8px] font-bold uppercase tracking-[0.2em]">Activated</span>
+                  </div>
+                )}
+                {space.state === 'FACE_DOWN' && space.row === 3 && space.col === -1 && (
+                  <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+                    <span className="text-stone-100 text-6xl font-black">X</span>
                   </div>
                 )}
                 {space.state === 'FACE_DOWN' && (
@@ -197,7 +217,7 @@ export const CaveBoard: React.FC<Props> = ({
               </div>
 
               {/* Right Wall */}
-              {!isRightPerimeter && (
+              {!isRightPerimeter && rightWallId !== '3,-1-3,0' && (
                 <div 
                   onClick={() => {
                     if (isBuildingWall && !hasRightWall) onWallClick?.(rightWallId);
@@ -213,7 +233,7 @@ export const CaveBoard: React.FC<Props> = ({
               )}
 
               {/* Bottom Wall */}
-              {!isBottomPerimeter && (
+              {!isBottomPerimeter && bottomWallId !== '3,-1-4,-1' && (
                 <div 
                   onClick={() => {
                     if (isBuildingWall && !hasBottomWall) onWallClick?.(bottomWallId);

@@ -6,13 +6,22 @@ export const userService = {
   async syncUserProfile(user: User): Promise<void> {
     const path = `users/${user.uid}`;
     try {
-      // We use setDoc with merge: true to avoid overwriting existing fields like 'role'
-      await setDoc(doc(db, path), {
+      const userDocRef = doc(db, path);
+      const userDoc = await getDoc(userDocRef);
+      
+      const userData: any = {
         email: user.email,
         displayName: user.displayName,
         photoURL: user.photoURL,
         lastLogin: serverTimestamp()
-      }, { merge: true });
+      };
+
+      // Only set the default role if the document doesn't exist yet
+      if (!userDoc.exists()) {
+        userData.role = 'user';
+      }
+
+      await setDoc(userDocRef, userData, { merge: true });
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, path);
     }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { GoodsState } from '../types/game';
-import { TreePine, Wheat, Leaf, Drumstick, Coins, ArrowRightLeft, RotateCcw } from 'lucide-react';
+import { TreePine, Wheat, Leaf, Drumstick, Coins, ArrowRightLeft, RotateCcw, PawPrint, Mountain, Hammer, Sword } from 'lucide-react';
 import { StoneIcon } from './StoneIcon';
 
 interface Props {
@@ -8,9 +8,10 @@ interface Props {
   onExchange?: (from: keyof GoodsState, to: keyof GoodsState) => void;
   onUndoExchange?: () => void;
   canUndoExchange?: boolean;
+  era: 1 | 2;
 }
 
-export const GoodsTrack: React.FC<Props> = ({ goods, onExchange, onUndoExchange, canUndoExchange }) => {
+export const GoodsTrack: React.FC<Props> = ({ goods, onExchange, onUndoExchange, canUndoExchange, era }) => {
   const goodIcons = {
     wood: <TreePine className="w-5 h-5 text-amber-700" />,
     stone: <StoneIcon className="w-5 h-5 text-gray-400" />,
@@ -18,14 +19,23 @@ export const GoodsTrack: React.FC<Props> = ({ goods, onExchange, onUndoExchange,
     flax: <Leaf className="w-5 h-5 text-green-500" />,
     food: <Drumstick className="w-5 h-5 text-orange-500" />,
     gold: <Coins className="w-5 h-5 text-yellow-400" />,
+    donkey: <PawPrint className="w-5 h-5 text-stone-400" />,
+    ore: <Mountain className="w-5 h-5 text-stone-500" />,
+    iron: <Hammer className="w-5 h-5 text-blue-300" />,
+    weapons: <Sword className="w-5 h-5 text-red-400" />,
   };
 
-  const goodOrder: (keyof GoodsState)[] = ['wood', 'stone', 'emmer', 'flax', 'food', 'gold'];
-  const exchangeable: (keyof GoodsState)[] = ['emmer', 'flax', 'gold'];
+  const goodOrder: (keyof GoodsState)[] = era === 1 
+    ? ['wood', 'stone', 'emmer', 'flax', 'food', 'gold']
+    : ['wood', 'stone', 'emmer', 'flax', 'food', 'gold', 'donkey', 'ore', 'iron', 'weapons'];
+
+  const exchangeable: (keyof GoodsState)[] = era === 1 
+    ? ['emmer', 'flax', 'gold']
+    : ['emmer', 'flax', 'gold', 'donkey'];
 
   return (
     <div className="bg-stone-800/90 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-stone-700 w-full">
-      <div className="flex items-center gap-4 overflow-x-auto">
+      <div className="flex items-center gap-4 overflow-x-auto custom-scrollbar pb-1">
         <div className="flex gap-2 flex-1">
           {goodOrder.map((good) => (
             <div key={good} className="flex items-center bg-stone-900/80 px-3 py-2 rounded-lg border border-stone-700 min-w-[100px] justify-between group relative">

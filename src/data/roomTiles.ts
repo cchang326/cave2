@@ -10,6 +10,8 @@ export const ROOM_TILES_MAP: Record<string, RoomTile> = {
     trigger: 'action',
     effectDescription: 'Gain either 1 wood or 1 stone or 1 emmer or 1 flax',
     iconicDescription: '+1[wood]|[stone]|[emmer]|[flax]',
+    era: 1,
+    excavatable: false
   }
 };
 
@@ -23,7 +25,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 1, max: 1, configuration: 'any' },
     trigger: 'action',
     effectDescription: 'Replenish either wood or stone or emmer or flax to 2.',
-    iconicDescription: '[arrow-up-to-line]2[wood]|[stone]|[emmer]|[flax]'
+    iconicDescription: '[arrow-up-to-line]2[wood]|[stone]|[emmer]|[flax]',
+    era: 1,
+    excavatable: false
   },
   {
     id: 'spinning_wheel',
@@ -34,7 +38,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 1, max: 1, configuration: 'any' },
     trigger: 'action',
     effectDescription: 'Pay 1 flax to gain 1 gold OR Pay 3 flax to gain 2 gold',
-    iconicDescription: '1[flax][arrow-right]+1[gold]\n {or} \n3[flax][arrow-right]+2[gold]'
+    iconicDescription: '1[flax][arrow-right]+1[gold]\n {or} \n3[flax][arrow-right]+2[gold]',
+    era: 1,
+    excavatable: false
   },
   {
     id: 'tunnel',
@@ -45,7 +51,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 2, max: 2, configuration: 'opposing' },
     trigger: 'action',
     effectDescription: 'Gain 2 food AND/OR If you have less than 3 stone, gain 1 stone',
-    iconicDescription: '+2[food]\n+1[stone] {if < 3 stones}'
+    iconicDescription: '+2[food]\n+1[stone] {if < 3 stones}',
+    era: 1,
+    excavatable: false
   },
   {
     id: 'grindstone',
@@ -56,7 +64,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 1, max: 2, configuration: 'adjacent' },
     trigger: 'action',
     effectDescription: 'Pay 1 emmer to gain 3 food OR Pay 4 emmer to gain 7 food',
-    iconicDescription: '1[emmer][arrow-right]+3[food]\n {or} \n4[emmer][arrow-right]+7[food]'
+    iconicDescription: '1[emmer][arrow-right]+3[food]\n {or} \n4[emmer][arrow-right]+7[food]',
+    era: 1,
+    excavatable: false
   },
   {
     id: 'food_corner',
@@ -67,7 +77,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 2, max: 2, configuration: 'adjacent' },
     trigger: 'action',
     effectDescription: 'Replenish food to 3',
-    iconicDescription: '[arrow-up-to-line]3[food]'
+    iconicDescription: '[arrow-up-to-line]3[food]',
+    era: 1,
+    excavatable: false
   },
   {
     id: 'parlor',
@@ -78,7 +90,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 3, max: 3, configuration: 'any' },
     trigger: 'action',
     effectDescription: 'Gain 1 good of each type of which you have 0 goods.',
-    iconicDescription: '+1 {of each}\n[wood][stone][emmer][flax][food][gold]\n{if 0 owned}'
+    iconicDescription: '+1 {of each}\n[wood][stone][emmer][flax][food][gold]\n{if 0 owned}',
+    era: 1,
+    excavatable: false
   },
   {
     id: 'warehouse',
@@ -89,7 +103,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 1, max: 3, configuration: 'adjacent' },
     trigger: 'action',
     effectDescription: 'Pay 2 food to gain 1 wood, 1 stone, 1 emmer, and 1 flax',
-    iconicDescription: '2[food][arrow-right]\n1[wood]1[stone]1[emmer]1[flax]'
+    iconicDescription: '2[food][arrow-right]\n1[wood]1[stone]1[emmer]1[flax]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'stall',
@@ -100,7 +116,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 1, max: 3, configuration: 'adjacent' },
     trigger: 'action',
     effectDescription: 'Pay either 5 emmer or 5 flax to gain 4 gold.',
-    iconicDescription: '5[emmer]|5[flax][arrow-right]\n4[gold]'
+    iconicDescription: '5[emmer]|5[flax][arrow-right]\n4[gold]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'sacrificial_altar',
@@ -111,7 +129,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 1, max: 3, configuration: 'adjacent' },
     trigger: 'action',
     effectDescription: 'Pay 1 wood, 1 emmer, 1 flax, and 1 food to gain 3 gold',
-    iconicDescription: '1[wood][emmer][flax][food][arrow-right]\n3[gold]'
+    iconicDescription: '1[wood][emmer][flax][food][arrow-right]\n3[gold]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'storeroom',
@@ -122,7 +142,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 2, max: 2, configuration: 'adjacent' },
     trigger: 'action',
     effectDescription: 'Gain 1 emmer, 1 flax, and 1 food',
-    iconicDescription: '+1[emmer]+1[flax]+1[food]'
+    iconicDescription: '+1[emmer]+1[flax]+1[food]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'weaving_room',
@@ -133,7 +155,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 2, max: 2, configuration: 'adjacent' },
     trigger: 'action',
     effectDescription: 'Pay 2 flax to gain 2 food and 2 gold',
-    iconicDescription: '2[flax][arrow-right]2[food]2[gold]'
+    iconicDescription: '2[flax][arrow-right]2[food]2[gold]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'furniture_workshop',
@@ -144,7 +168,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 2, max: 3, configuration: 'adjacent' },
     trigger: 'action',
     effectDescription: 'Pay 2 wood and 1 flax to gain 3 gold',
-    iconicDescription: '2[wood]1[flax][arrow-right]+3[gold]'
+    iconicDescription: '2[wood]1[flax][arrow-right]+3[gold]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'gold_vein',
@@ -155,7 +181,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 2, max: 3, configuration: 'adjacent' },
     trigger: 'action',
     effectDescription: 'Gain 1 stone and 1 gold.',
-    iconicDescription: '+1[stone][space]+1[gold]'
+    iconicDescription: '+1[stone][space]+1[gold]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'junction_room',
@@ -166,7 +194,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 2, max: 2, configuration: 'opposing' },
     trigger: 'action',
     effectDescription: 'Pay 3 different goods to gain 2 gold.',
-    iconicDescription: '3 {diff goods} [arrow-right]\n2[gold]'
+    iconicDescription: '3 {diff goods} [arrow-right]\n2[gold]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'digging_cave',
@@ -177,7 +207,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 3, max: 3, configuration: 'any' },
     trigger: 'action',
     effectDescription: 'Pay 1 gold to excavate once',
-    iconicDescription: '1[gold][arrow-right]+[pickaxe]'
+    iconicDescription: '1[gold][arrow-right]+[pickaxe]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'bakehouse',
@@ -188,7 +220,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 3, max: 3, configuration: 'any' },
     trigger: 'action',
     effectDescription: 'Pay 2 emmer to gain 4 food and 1 gold OR Pay 3 emmer to gain 4 food and 2 gold',
-    iconicDescription: '2[emmer][arrow-right]4[food]1[gold]\n{or}\n3[emmer][arrow-right]4[food]2[gold]'
+    iconicDescription: '2[emmer][arrow-right]4[food]1[gold]\n{or}\n3[emmer][arrow-right]4[food]2[gold]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'state_room',
@@ -199,7 +233,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 3, max: 4, configuration: 'any' },
     trigger: 'action',
     effectDescription: 'Gain 1 flax and 1 gold.',
-    iconicDescription: '+1[flax][space]+1[gold]'
+    iconicDescription: '+1[flax][space]+1[gold]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'secret_chamber',
@@ -210,7 +246,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 4, max: 4, configuration: 'any' },
     trigger: 'action',
     effectDescription: 'Gain either 3 flax or 1 gold',
-    iconicDescription: '+3[flax] | +1[gold]'
+    iconicDescription: '+3[flax] | +1[gold]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'treasury',
@@ -221,7 +259,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 4, max: 4, configuration: 'any' },
     trigger: 'action',
     effectDescription: 'If you have (at least) 3 gold, gain 1 food and 1 gold.',
-    iconicDescription: '3[gold]: 1[food]1[gold]'
+    iconicDescription: '3[gold]: 1[food]1[gold]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'prospecting_site',
@@ -232,7 +272,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 1, max: 2, configuration: 'adjacent' },
     trigger: 'passive',
     effectDescription: 'Each time you use the "Undergrowth" action tile, you can pay 1 food to gain 1 gold',
-    iconicDescription: '(Undergrowth):\n1[food][arrow-right]1[gold]'
+    iconicDescription: '(Undergrowth):\n1[food][arrow-right]1[gold]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'retting_room',
@@ -243,7 +285,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 1, max: 3, configuration: 'adjacent' },
     trigger: 'passive',
     effectDescription: 'Each time after you gain 1-3 flax from an effect, you get 1 food.',
-    iconicDescription: '+[leaf][leaf-light][leaf-lighter]: +1[food]'
+    iconicDescription: '+[leaf][leaf-light][leaf-lighter]: +1[food]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'equipment_room',
@@ -254,7 +298,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 1, max: 2, configuration: 'adjacent' },
     trigger: 'passive',
     effectDescription: 'Undermining activates up to 3 rooms. Expedition activates up to 4 rooms.',
-    iconicDescription: '(Undermining):[3]\n(Expedition):[4]'
+    iconicDescription: '(Undermining):[3]\n(Expedition):[4]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'wood_storeroom',
@@ -265,7 +311,9 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 2, max: 2, configuration: 'adjacent' },
     trigger: 'passive',
     effectDescription: 'Each time you use a [1] effect, also gain 1 wood, if possible.',
-    iconicDescription: '[1]:1[wood]'
+    iconicDescription: '[1]:1[wood]',
+    era: 1,
+    excavatable: true
   },
   {
     id: 'dungeon',
@@ -276,6 +324,281 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 4, max: 4, configuration: 'any' },
     trigger: 'passive',
     effectDescription: 'Each time you build a wall, also gain 2 gold.',
-    iconicDescription: '(Build a wall):2[gold]'
+    iconicDescription: '(Build a wall):2[gold]',
+    era: 1,
+    excavatable: true
+  },
+  {
+    id: 'cattle_market',
+    name: 'Cattle Market',
+    color: 'orange',
+    cost: { wood: 1 },
+    vp: 4,
+    wallRequirement: { min: 0, max: 1, configuration: 'any' },
+    trigger: 'action',
+    effectDescription: 'Gain 1 donkey OR Pay 1 gold for 2 donkeys OR Pay 2 gold for 3 donkeys',
+    iconicDescription: '+1[donkey] | 1[gold][arrow-right]2[donkey] | 2[gold][arrow-right]3[donkey]',
+    era: 2,
+    excavatable: false
+  },
+  {
+    id: 'ore_vein',
+    name: 'Ore Vein',
+    color: 'orange',
+    cost: {},
+    vp: 2,
+    wallRequirement: { min: 0, max: 3, configuration: 'any' },
+    trigger: 'action',
+    effectDescription: 'Gain 3 ore and 2 food.',
+    iconicDescription: '+3[ore] +2[food]',
+    era: 2,
+    excavatable: false
+  },
+  {
+    id: 'bloomery',
+    name: 'Bloomery',
+    color: 'orange',
+    cost: { stone: 2, gold: 1 },
+    vp: 5,
+    wallRequirement: { min: 1, max: 2, configuration: 'adjacent' },
+    trigger: 'action',
+    effectDescription: 'Pay 2 ore to gain 3 iron and 1 gold',
+    iconicDescription: '2[ore][arrow-right]3[iron]1[gold]',
+    era: 2,
+    excavatable: false
+  },
+  {
+    id: 'store',
+    name: 'Store',
+    color: 'orange',
+    cost: { stone: 1 },
+    vp: 5,
+    wallRequirement: { min: 1, max: 3, configuration: 'adjacent' },
+    trigger: 'action',
+    effectDescription: 'Pay 1 gold to gain 4 food, 1 ore, and 1 flax',
+    iconicDescription: '1[gold][arrow-right]4[food]1[ore]1[flax]',
+    era: 2,
+    excavatable: false
+  },
+  {
+    id: 'cave_silo',
+    name: 'Cave Silo',
+    color: 'orange',
+    cost: { iron: 2 },
+    vp: 5,
+    wallRequirement: { min: 0, max: 3, configuration: 'any' },
+    trigger: 'action',
+    effectDescription: 'Gain 4 emmer.',
+    iconicDescription: '+4[emmer]',
+    era: 2,
+    excavatable: false
+  },
+  {
+    id: 'box',
+    name: 'Box',
+    color: 'orange',
+    cost: { wood: 1, emmer: 1 },
+    vp: 6,
+    wallRequirement: { min: 2, max: 2, configuration: 'adjacent' },
+    trigger: 'action',
+    effectDescription: 'Gain 1 wood, 1 flax, and 1 donkey',
+    iconicDescription: '+1[wood] +1[flax] +1[donkey]',
+    era: 2,
+    excavatable: false
+  },
+  {
+    id: 'mining_cave',
+    name: 'Mining Cave',
+    color: 'orange',
+    cost: { wood: 1 },
+    vp: 5,
+    wallRequirement: { min: 0, max: 3, configuration: 'any' },
+    trigger: 'action',
+    effectDescription: 'Gain 5 ore.',
+    iconicDescription: '+5[ore]',
+    era: 2,
+    excavatable: true
+  },
+  {
+    id: 'hitching_post',
+    name: 'Hitching Post',
+    color: 'orange',
+    cost: { wood: 1 },
+    vp: 5,
+    wallRequirement: { min: 1, max: 2, configuration: 'adjacent' },
+    trigger: 'action',
+    effectDescription: 'Pay 3/4/5 donkeys to gain 2/3/4 gold',
+    iconicDescription: '3[donkey][arrow-right]2[gold]\n4[donkey][arrow-right]3[gold]\n5[donkey][arrow-right]4[gold]',
+    era: 2,
+    excavatable: true
+  },
+  {
+    id: 'wainwright',
+    name: 'Wainwright',
+    color: 'orange',
+    cost: { stone: 2, gold: 2 },
+    vp: 10,
+    wallRequirement: { min: 1, max: 2, configuration: 'adjacent' },
+    trigger: 'action',
+    effectDescription: 'Pay 3 wood and 1 iron to gain 5 gold',
+    iconicDescription: '3[wood]1[iron][arrow-right]5[gold]',
+    era: 2,
+    excavatable: true
+  },
+  {
+    id: 'ceremonial_hall',
+    name: 'Ceremonial Hall',
+    color: 'orange',
+    cost: { weapons: 2, gold: 8 },
+    vp: 14,
+    wallRequirement: { min: 1, max: 2, configuration: 'adjacent' },
+    trigger: 'action',
+    effectDescription: 'Gain 2 gold.',
+    iconicDescription: '+2[gold]',
+    era: 2,
+    excavatable: true
+  },
+  {
+    id: 'ironsmith',
+    name: 'Ironsmith',
+    color: 'orange',
+    cost: { stone: 3 },
+    vp: 7,
+    wallRequirement: { min: 2, max: 3, configuration: 'adjacent' },
+    trigger: 'action',
+    effectDescription: 'Pay 2 iron to gain 1 weapon and 3 gold',
+    iconicDescription: '2[iron][arrow-right]1[weapon]3[gold]',
+    era: 2,
+    excavatable: true
+  },
+  {
+    id: 'swordsmith',
+    name: 'Swordsmith',
+    color: 'orange',
+    cost: { stone: 1, gold: 2 },
+    vp: 10,
+    wallRequirement: { min: 3, max: 3, configuration: 'any' },
+    trigger: 'action',
+    effectDescription: 'Pay 1/4/7 ore to gain 1/2/3 weapons',
+    iconicDescription: '1[ore][arrow-right]1[weapon]\n4[ore][arrow-right]2[weapon]\n7[ore][arrow-right]3[weapon]',
+    era: 2,
+    excavatable: true
+  },
+  {
+    id: 'slaughtering_cave',
+    name: 'Slaughtering Cave',
+    color: 'orange',
+    cost: { wood: 1, stone: 1 },
+    vp: 7,
+    wallRequirement: { min: 3, max: 3, configuration: 'any' },
+    trigger: 'action',
+    effectDescription: 'Pay 1 donkey to gain 5 food and 1 gold',
+    iconicDescription: '1[donkey][arrow-right]5[food]1[gold]',
+    era: 2,
+    excavatable: true
+  },
+  {
+    id: 'weaponsmith',
+    name: 'Weaponsmith',
+    color: 'orange',
+    cost: { wood: 1, gold: 3 },
+    vp: 11,
+    wallRequirement: { min: 2, max: 3, configuration: 'adjacent' },
+    trigger: 'action',
+    effectDescription: 'Pay 1 wood and 1 iron to gain 2 weapons',
+    iconicDescription: '1[wood]1[iron][arrow-right]2[weapon]',
+    era: 2,
+    excavatable: true
+  },
+  {
+    id: 'weapon_chamber',
+    name: 'Weapon Chamber',
+    color: 'orange',
+    cost: { weapons: 4 },
+    vp: 12,
+    wallRequirement: { min: 4, max: 4, configuration: 'any' },
+    trigger: 'action',
+    effectDescription: 'Gain 1 weapon.',
+    iconicDescription: '+1[weapon]',
+    era: 2,
+    excavatable: true
+  },
+  {
+    id: 'armory',
+    name: 'Armory',
+    color: 'orange',
+    cost: { iron: 3, weapons: 2 },
+    vp: 13,
+    wallRequirement: { min: 3, max: 4, configuration: 'any' },
+    trigger: 'none',
+    effectDescription: 'No effect.',
+    iconicDescription: '[helmet]',
+    era: 2,
+    excavatable: true
+  },
+  {
+    id: 'oubliette',
+    name: 'Oubliette',
+    color: 'orange',
+    cost: { iron: 4 },
+    vp: 9,
+    wallRequirement: { min: 4, max: 4, configuration: 'any' },
+    trigger: 'action',
+    effectDescription: 'Pay 1/3/6 food to gain 1/2/3 weapons',
+    iconicDescription: '1[food][arrow-right]1[weapon]\n3[food][arrow-right]2[weapon]\n6[food][arrow-right]3[weapon]',
+    era: 2,
+    excavatable: true
+  },
+  {
+    id: 'gold_donkey',
+    name: 'Gold-Donkey',
+    color: 'orange',
+    cost: { wood: 2, stone: 2 },
+    vp: 6,
+    wallRequirement: { min: 4, max: 4, configuration: 'any' },
+    trigger: 'action',
+    effectDescription: 'Gain 1 gold for every second donkey you have.',
+    iconicDescription: '2[donkey]x[arrow-right]1[gold]',
+    era: 2,
+    excavatable: true
+  },
+  {
+    id: 'iron_trader',
+    name: 'Iron Trader',
+    color: 'blue',
+    cost: { wood: 2, gold: 1 },
+    vp: 8,
+    wallRequirement: { min: 1, max: 2, configuration: 'adjacent' },
+    trigger: 'passive',
+    effectDescription: 'Each time you use the [1]+1 effect or the [2] effect, also gain 1 iron.',
+    iconicDescription: '[1]+1 | [2]: +1[iron]',
+    era: 2,
+    excavatable: true
+  },
+  {
+    id: 'equipment_cabinet',
+    name: 'Equipment Cabinet',
+    color: 'blue',
+    cost: { iron: 1 },
+    vp: 5,
+    wallRequirement: { min: 1, max: 2, configuration: 'adjacent' },
+    trigger: 'passive',
+    effectDescription: 'Each time you use an effect to excavate, also gain 1 ore and 1 food.',
+    iconicDescription: '[pickaxe]: +1[ore] +1[food]',
+    era: 2,
+    excavatable: true
+  },
+  {
+    id: 'breeding_cave',
+    name: 'Breeding Cave',
+    color: 'blue',
+    cost: { emmer: 2 },
+    vp: 6,
+    wallRequirement: { min: 2, max: 3, configuration: 'adjacent' },
+    trigger: 'passive',
+    effectDescription: 'Each time you use the [1] effect, also gain 1 donkey.',
+    iconicDescription: '[1]: +1[donkey]',
+    era: 2,
+    excavatable: true
   }
 ];

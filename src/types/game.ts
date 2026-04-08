@@ -1,4 +1,4 @@
-export type Good = 'wood' | 'stone' | 'emmer' | 'flax' | 'food' | 'gold';
+export type Good = 'wood' | 'stone' | 'emmer' | 'flax' | 'food' | 'gold' | 'donkey' | 'ore' | 'iron' | 'weapons';
 export type EffectTrigger = 'immediate' | 'action' | 'passive' | 'end_game' | 'anytime' | 'none';
 
 export interface GoodsState {
@@ -8,6 +8,10 @@ export interface GoodsState {
   flax: number;
   food: number;
   gold: number;
+  donkey: number;
+  ore: number;
+  iron: number;
+  weapons: number;
 }
 
 export interface WallRequirement {
@@ -27,6 +31,8 @@ export interface RoomTile {
   effectDescription: string;
   iconicDescription?: string;
   effectPayload?: any;
+  era: 1 | 2;
+  excavatable: boolean;
 }
 
 export type SpaceState = 'EMPTY' | 'FACE_DOWN' | 'FURNISHED' | 'ENTRANCE' | 'CROSSED_PICKAXES';
@@ -46,6 +52,9 @@ export interface ActionTile {
   stage: 0 | 2 | 3 | 4;
   description: string;
   iconicDescription?: string;
+  era: 1 | 2;
+  additionalActionDescription?: string;
+  additionalActionIconic?: string;
 }
 
 export interface ActionBoardState {
@@ -71,7 +80,7 @@ export interface ChecklistItem {
 }
 
 export interface UIState {
-  mode: 'IDLE' | 'EXCAVATE' | 'FURNISH_SELECT_ROOM' | 'FURNISH_SELECT_SPACE' | 'ROOM_ACTION' | 'BUILD_WALL' | 'REMOVE_WALL' | 'PAY_DYNAMIC' | 'RESOLVING_TURN' | 'GAME_OVER' | 'LEADERBOARD';
+  mode: 'IDLE' | 'EXCAVATE' | 'FURNISH_SELECT_ROOM' | 'FURNISH_SELECT_SPACE' | 'ROOM_ACTION' | 'BUILD_WALL' | 'REMOVE_WALL' | 'PAY_DYNAMIC' | 'RESOLVING_TURN' | 'GAME_OVER' | 'LEADERBOARD' | 'DRAFTING' | 'DRAFTING_PLACE_ROOM';
   excavationsLeft: number;
   furnishingsLeft: number;
   roomActionsLeft: number;
@@ -89,6 +98,8 @@ export interface UIState {
   showIconicDescription: boolean;
   highlightFurnishable: boolean;
   showScoreSummary: boolean;
+  draftingWallsLeft: number;
+  draftingScore: number;
 }
 
 export interface GameState {
@@ -103,4 +114,5 @@ export interface GameState {
   conversionHistory: (keyof GoodsState)[];
   gameId: string;
   cheatsUsed: boolean;
+  era: 1 | 2;
 }
