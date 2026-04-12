@@ -56,22 +56,16 @@ export const CaveBoard: React.FC<Props> = ({
   );
 
   return (
-    <div className={`bg-stone-700 p-4 rounded-xl shadow-2xl border-4 border-stone-800 relative ${children ? 'w-full' : 'inline-block'}`}>
+    <div className="bg-stone-700 p-4 rounded-xl shadow-2xl border-4 border-stone-800 relative min-w-full w-fit flex flex-col">
       <h2 className="text-stone-300 text-[10px] font-bold uppercase tracking-widest mb-4 text-center">Your Cave</h2>
-      <div 
-        className="grid gap-2 w-full"
-        style={{ 
-          gridTemplateColumns: `repeat(${colCount}, 8rem) 1fr`,
-          gridTemplateRows: `repeat(${rowCount}, 8rem)`
-        }}
-      >
-        {children && (
-          <div className="row-start-1 row-end-5 col-start-3 col-end-[-1] flex flex-col pl-2 z-0 pointer-events-none">
-            <div className="pointer-events-auto w-full overflow-y-auto max-h-full pr-1">
-              {children}
-            </div>
-          </div>
-        )}
+      <div className="flex justify-center items-start">
+        <div 
+          className="grid gap-2"
+          style={{ 
+            gridTemplateColumns: `repeat(${colCount}, 8rem)`,
+            gridTemplateRows: `repeat(${rowCount}, 8rem)`
+          }}
+        >
         {cave.map((space) => {
           const isActivated = activatedRoomsThisTurn.includes(space.id);
           const isExcavatable = isExcavating && space.state === 'FACE_DOWN' && accessibleSpaces.includes(space.id);
@@ -90,19 +84,15 @@ export const CaveBoard: React.FC<Props> = ({
           const hasTopNeighbor = space.row > minRow && grid[gridRow - 1][gridCol] !== null;
           const hasBottomNeighbor = space.row < maxRow && grid[gridRow + 1][gridCol] !== null;
           
-          // Era I and Era II boards are separated by a gap, EXCEPT at the entrance (row 3)
-          const isGapRight = space.col === -1 && space.row !== 3;
-          const isGapLeft = space.col === 0 && space.row !== 3;
-
-          const hasLeftNeighbor = space.col > minCol && grid[gridRow][gridCol - 1] !== null && !isGapLeft;
-          const hasRightNeighbor = space.col < maxCol && grid[gridRow][gridCol + 1] !== null && !isGapRight;
+          const hasLeftNeighbor = space.col > minCol && grid[gridRow][gridCol - 1] !== null;
+          const hasRightNeighbor = space.col < maxCol && grid[gridRow][gridCol + 1] !== null;
 
           const hasRightWall = walls.includes(rightWallId);
           const hasBottomWall = walls.includes(bottomWallId);
 
           const isTopPerimeter = !hasTopNeighbor && !space.openSides?.includes('top');
-          const isBottomPerimeter = !hasBottomNeighbor && !(space.row === 3 && space.col === -1) && !space.openSides?.includes('bottom');
-          const isLeftPerimeter = !hasLeftNeighbor && !(space.row === 3 && space.col === 0) && !space.openSides?.includes('left');
+          const isBottomPerimeter = !hasBottomNeighbor && !space.openSides?.includes('bottom');
+          const isLeftPerimeter = !hasLeftNeighbor && !space.openSides?.includes('left');
           const isRightPerimeter = !hasRightNeighbor && !space.openSides?.includes('right');
 
           return (
@@ -250,7 +240,19 @@ export const CaveBoard: React.FC<Props> = ({
             </div>
           );
         })}
+        {children && (
+          <div 
+            className="z-20"
+            style={{ 
+              gridColumn: 3 - minCol, 
+              gridRow: `1 / span ${rowCount}` 
+            }}
+          >
+            {children}
+          </div>
+        )}
       </div>
     </div>
+  </div>
   );
 };

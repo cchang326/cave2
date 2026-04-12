@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { RoomTile, GoodsState, CaveSpace } from '../types/game';
 import { WallRequirementIcon } from './WallRequirementIcon';
 import { IconicDescription } from './IconicDescription';
-import { TreePine, Wheat, Leaf, Drumstick, Coins, Shield, Lock, LockOpen } from 'lucide-react';
+import { TreePine, Wheat, Leaf, Drumstick, Coins, Shield, Lock, LockOpen, ListChecks } from 'lucide-react';
 import { StoneIcon } from './StoneIcon';
 import { isValidRoomPlacement } from '../utils/walls';
 
@@ -17,9 +17,12 @@ interface Props {
   showIconicDescription?: boolean;
   highlightFurnishable: boolean;
   fixTileLocations: boolean;
+  isChecklistCollapsed: boolean;
   onRoomClick?: (id: string) => void;
   onToggleHighlight: () => void;
   onToggleFixTileLocations: () => void;
+  onToggleChecklist: () => void;
+  children?: React.ReactNode;
 }
 
 const renderCost = (cost: RoomTile['cost']): ReactNode => {
@@ -87,9 +90,12 @@ export const CentralDisplay: React.FC<Props> = ({
   showIconicDescription = true,
   highlightFurnishable,
   fixTileLocations,
+  isChecklistCollapsed,
   onRoomClick,
   onToggleHighlight,
-  onToggleFixTileLocations
+  onToggleFixTileLocations,
+  onToggleChecklist,
+  children
 }) => {
   const isFurnishable = (tile: RoomTile): boolean => {
     // Rule: You must always have more orange Rooms than blue Rooms.
@@ -123,10 +129,27 @@ export const CentralDisplay: React.FC<Props> = ({
   };
 
   return (
-    <div className="bg-stone-800 p-4 rounded-xl shadow-lg border border-stone-700 min-h-full relative">
-      <div className="flex justify-between items-center mb-4">
-        <div className="w-24" /> {/* Spacer */}
-        <h2 className="text-stone-300 text-[10px] font-bold uppercase tracking-widest text-center">Central Display</h2>
+    <div className="bg-stone-800 p-4 rounded-xl shadow-lg border border-stone-700 min-h-[32rem] relative flex flex-col">
+      {children}
+      
+      {/* Background Title */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
+        <span className="text-stone-700/20 text-6xl font-black uppercase tracking-[0.2em] text-center px-4">
+          Central Display
+        </span>
+      </div>
+
+      <div className="flex justify-between items-center mb-4 relative z-[110]">
+        <div className="w-24 flex items-center justify-start gap-1">
+          <button 
+            onClick={onToggleChecklist}
+            title={isChecklistCollapsed ? "Show Action Checklist" : "Hide Action Checklist"}
+            className="flex items-center p-1 rounded hover:bg-stone-700/50 transition-colors group relative z-[110]"
+          >
+            <ListChecks className={`w-4 h-4 transition-colors ${!isChecklistCollapsed ? 'text-stone-200 group-hover:text-white' : 'text-stone-500/70 group-hover:text-stone-400'}`} />
+          </button>
+        </div>
+        <div className="flex-1" />
         <div className="w-24 flex items-center justify-end gap-1">
           <button 
             onClick={onToggleFixTileLocations}
@@ -153,7 +176,7 @@ export const CentralDisplay: React.FC<Props> = ({
           </button>
         </div>
       </div>
-      <div className="grid grid-cols-4 gap-3 justify-items-center">
+      <div className="grid grid-cols-4 gap-3 justify-items-center relative z-10">
         {tiles.map((tile, index) => {
           if (!tile) {
             return (

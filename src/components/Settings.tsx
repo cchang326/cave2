@@ -13,9 +13,10 @@ interface Props {
   setSettingsState: React.Dispatch<React.SetStateAction<SettingsState>>;
   gameState: GameState;
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
+  onTransitionToEraII: () => void;
 }
 
-export const SettingsPanel: React.FC<Props> = ({ settingsState, setSettingsState, gameState, setGameState }) => {
+export const SettingsPanel: React.FC<Props> = ({ settingsState, setSettingsState, gameState, setGameState, onTransitionToEraII }) => {
   const [isOpen, setIsOpen] = useState(false);
   
   const currentScore = calculateScore(gameState);
@@ -153,17 +154,14 @@ export const SettingsPanel: React.FC<Props> = ({ settingsState, setSettingsState
           </button>
         </div>
 
-        <div className="flex items-center justify-between p-2 bg-stone-900/50 rounded-lg border border-stone-700 opacity-60">
+        <div className="flex items-center justify-between p-2 bg-stone-900/50 rounded-lg border border-stone-700">
           <div className="flex flex-col">
             <span className="text-xs font-bold text-stone-300 uppercase tracking-wider">Era II Expansion</span>
-            <span className="text-[9px] text-orange-500 font-bold leading-tight">In Development</span>
+            <span className="text-[9px] text-green-500 font-bold leading-tight">Active</span>
           </div>
-          <button
-            disabled
-            className="px-3 py-1 rounded-md text-[10px] font-black uppercase bg-stone-800 text-stone-600 cursor-not-allowed"
-          >
-            OFF
-          </button>
+          <div className="px-3 py-1 rounded-md text-[10px] font-black uppercase bg-green-600 text-white shadow-inner">
+            ON
+          </div>
         </div>
 
         <button
@@ -209,6 +207,14 @@ export const SettingsPanel: React.FC<Props> = ({ settingsState, setSettingsState
               className="w-full py-2 bg-stone-700 hover:bg-stone-600 text-stone-200 rounded-lg text-sm font-bold transition-colors"
             >
               Trigger Add. Cavern
+            </button>
+          )}
+          {gameState.era === 1 && (
+            <button
+              onClick={onTransitionToEraII}
+              className="w-full py-2 bg-orange-700 hover:bg-orange-600 text-stone-100 rounded-lg text-sm font-bold transition-colors shadow-lg shadow-orange-900/20"
+            >
+              Jump to Era II
             </button>
           )}
         </div>

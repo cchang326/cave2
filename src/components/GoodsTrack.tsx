@@ -34,47 +34,45 @@ export const GoodsTrack: React.FC<Props> = ({ goods, onExchange, onUndoExchange,
     : ['emmer', 'flax', 'gold', 'donkey'];
 
   return (
-    <div className="bg-stone-800/90 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-stone-700 w-full">
-      <div className="flex items-center gap-4 overflow-x-auto custom-scrollbar pb-1">
-        <div className="flex gap-2 flex-1">
-          {goodOrder.map((good) => (
-            <div key={good} className="flex items-center bg-stone-900/80 px-3 py-2 rounded-lg border border-stone-700 min-w-[100px] justify-between group relative">
-              <div className="flex items-center gap-2">
-                {goodIcons[good]}
-                <div className="flex flex-col">
-                  <span className="text-stone-500 text-[9px] uppercase tracking-tighter leading-none mb-0.5">{good}</span>
-                  <span className="text-white font-mono text-lg font-bold leading-none">{goods[good]}</span>
-                </div>
+    <div className="bg-stone-800/90 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-stone-700 w-32 flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5 pr-1">
+        {goodOrder.map((good) => (
+          <div key={good} className="flex items-center bg-stone-900/80 px-2 py-1.5 rounded-lg border border-stone-700 w-full justify-between group relative">
+            <div className="flex items-center gap-2">
+              <div className="flex-shrink-0">{goodIcons[good]}</div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-stone-500 text-[8px] uppercase tracking-tighter leading-none mb-0.5 truncate">{good}</span>
+                <span className="text-white font-mono text-base font-bold leading-none">{goods[good]}</span>
               </div>
-              
-              {onExchange && exchangeable.includes(good) && (
-                <button
-                  onClick={() => onExchange(good, 'food')}
-                  disabled={goods[good] <= 0}
-                  className="ml-2 p-1.5 bg-stone-800/50 border border-stone-700 hover:bg-stone-700 disabled:opacity-30 disabled:hover:bg-transparent rounded-md transition-all text-amber-500/70 hover:text-amber-400 hover:border-amber-500/30 shadow-sm"
-                  title={`Exchange 1 ${good} for 1 food`}
-                >
-                  <ArrowRightLeft className="w-3.5 h-3.5" />
-                </button>
-              )}
             </div>
-          ))}
-        </div>
-        {onUndoExchange && (
-          <button
-            onClick={onUndoExchange}
-            disabled={!canUndoExchange}
-            title="Undo last conversion"
-            className={`flex items-center justify-center p-2 rounded-lg border transition-all shadow-md flex-shrink-0
-              ${canUndoExchange 
-                ? 'bg-orange-600/20 border-orange-500 text-orange-400 hover:bg-orange-600/30 active:bg-orange-600/40' 
-                : 'bg-stone-800 border-stone-700 text-stone-600 opacity-50 cursor-not-allowed'}
-            `}
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
-        )}
+            
+            {onExchange && exchangeable.includes(good) && (
+              <button
+                onClick={() => onExchange(good, 'food')}
+                disabled={goods[good] <= 0}
+                className="p-1 bg-stone-800/50 border border-stone-700 hover:bg-stone-700 disabled:opacity-30 disabled:hover:bg-transparent rounded-md transition-all text-amber-500/70 hover:text-amber-400 hover:border-amber-500/30 shadow-sm"
+                title={`Exchange 1 ${good} for 1 food`}
+              >
+                <ArrowRightLeft className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        ))}
       </div>
+      {onUndoExchange && (
+        <button
+          onClick={onUndoExchange}
+          disabled={!canUndoExchange}
+          title="Undo last conversion"
+          className={`flex items-center justify-center py-2 rounded-lg border transition-all shadow-md w-full
+            ${canUndoExchange 
+              ? 'bg-orange-600/20 border-orange-500 text-orange-400 hover:bg-orange-600/30 active:bg-orange-600/40' 
+              : 'bg-stone-800 border-stone-700 text-stone-600 opacity-50 cursor-not-allowed'}
+          `}
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+        </button>
+      )}
     </div>
   );
 };

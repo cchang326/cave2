@@ -1,29 +1,27 @@
 import { CaveSpace, WallRequirement } from '../types/game';
 
 export function getSpaceWalls(space: CaveSpace, internalWalls: string[]) {
-  const { row, col, openSides = [] } = space;
-  
-  // Original Cave logic (rows 0-4, cols 0-2)
-  const isOriginalCave = row <= 4 && col <= 2;
+  const { row, col, openSides } = space;
   
   let top = internalWalls.includes(`${row - 1},${col}-${row},${col}`);
   let bottom = internalWalls.includes(`${row},${col}-${row + 1},${col}`);
   let left = internalWalls.includes(`${row},${col - 1}-${row},${col}`);
   let right = internalWalls.includes(`${row},${col}-${row},${col + 1}`);
 
-  if (isOriginalCave) {
+  if (openSides) {
+    // If openSides is defined, use it to determine perimeter walls
+    if (!openSides.includes('top')) top = true;
+    if (!openSides.includes('bottom')) bottom = true;
+    if (!openSides.includes('left')) left = true;
+    if (!openSides.includes('right')) right = true;
+  } else {
+    // Fallback for original Era I board without openSides
     if (row === 0) top = true;
     if (row === 4 && col === 2) top = true;
     if (row === 4) bottom = true;
     if (col === 0 && row !== 3) left = true;
     if (col === 1 && row !== 4) right = true;
     if (col === 2 && row === 4) right = true;
-  } else {
-    // Additional Cavern or other spaces
-    if (!openSides.includes('top')) top = true;
-    if (!openSides.includes('bottom')) bottom = true;
-    if (!openSides.includes('left')) left = true;
-    if (!openSides.includes('right')) right = true;
   }
 
   return { top, right, bottom, left };

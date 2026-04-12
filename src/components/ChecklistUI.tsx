@@ -1,14 +1,16 @@
 import React from 'react';
 import { ChecklistItem, GoodsState } from '../types/game';
-import { Check, X, Play, ChevronRight, Undo2, Square, CheckSquare, Circle, Info, Drumstick, TreePine, Wheat, Leaf, Coins } from 'lucide-react';
+import { Check, X, Play, ChevronRight, Undo2, Square, CheckSquare, Circle, Info, Drumstick, TreePine, Wheat, Leaf, Coins, GripVertical } from 'lucide-react';
 import { StoneIcon } from './StoneIcon';
 import { ChecklistIconRenderer, getIconicChoiceLabel } from './ChecklistIconRenderer';
 import { IconicDescription } from './IconicDescription';
+import { motion } from 'motion/react';
 
 interface Props {
   checklist: ChecklistItem[];
   goods: GoodsState;
   showIconicDescription?: boolean;
+  isCollapsed: boolean;
   onExecute: (id: string) => void;
   onSkip: (id: string) => void;
   onChoose: (id: string, optionIndex: number) => void;
@@ -47,6 +49,7 @@ export const ChecklistUI: React.FC<Props> = ({
   checklist, 
   goods, 
   showIconicDescription = true,
+  isCollapsed,
   onExecute, 
   onSkip, 
   onChoose, 
@@ -55,17 +58,21 @@ export const ChecklistUI: React.FC<Props> = ({
   canUndoAction,
   onCancel
 }) => {
+  if (isCollapsed) return null;
+
   const allDoneOrSkipped = checklist.every(item => item.status === 'DONE' || item.status === 'SKIPPED');
   const anyDoing = checklist.some(item => item.status === 'DOING');
 
   const showUndo = (canUndoAction && onUndoAction) || !!onCancel;
 
   return (
-    <div className={`bg-stone-800/90 p-3.5 rounded-xl shadow-lg border border-stone-700 transition-all duration-300 backdrop-blur-sm ${
-      showIconicDescription ? 'w-auto min-w-[16rem] max-w-[24rem]' : 'w-full min-w-[20rem]'
-    }`}>
-      <div className="relative flex justify-center items-center mb-2">
-        <h2 className="text-stone-300 text-[10px] font-bold uppercase tracking-widest text-center">Action Checklist</h2>
+    <div 
+      className={`absolute top-2 left-2 z-[100] bg-stone-900 p-3.5 rounded-xl shadow-2xl border border-stone-600 flex flex-col transition-all duration-300 ${
+        showIconicDescription ? 'w-full min-w-[16rem] max-w-[20rem]' : 'w-full min-w-[20rem] max-w-[24rem]'
+      }`}
+    >
+      <div className="relative flex justify-center items-center mb-2 group">
+        <h2 className="text-stone-300 text-[10px] font-bold uppercase tracking-widest text-center px-6">Action Checklist</h2>
         {showUndo && (
           <button
             onClick={onCancel || onUndoAction}
@@ -77,7 +84,7 @@ export const ChecklistUI: React.FC<Props> = ({
         )}
       </div>
       
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 overflow-y-auto pr-1 custom-scrollbar max-h-[70vh]">
         {checklist.length === 0 ? (
           <div className="py-12 flex flex-col items-center justify-center text-stone-500 border border-dashed border-stone-700/50 rounded-lg bg-stone-900/20">
             <Square className="w-8 h-8 mb-2 opacity-10" />
