@@ -58,7 +58,7 @@ export const IconicDescription: React.FC<Props> = ({ description, className = ""
       case '[ore]':
         return <OreIcon key={index} className={`${iconBase} text-zinc-950 inline-block align-middle`} />;
       case '[iron]':
-        return <Cuboid key={index} className={`${iconBase} text-blue-300 inline-block align-middle`} />;
+        return <Cuboid key={index} className={`${iconBase} text-blue-800 inline-block align-middle`} />;
       case '[weapon]':
       case '[weapons]':
         return <Sword key={index} className={`${iconBase} text-red-400 inline-block align-middle`} />;

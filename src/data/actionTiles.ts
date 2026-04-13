@@ -38,7 +38,7 @@ export const ERA_II_ACTIONS: ActionTile[] = [
     name: 'Arms Trade', 
     stage: 4, 
     description: 'Pay 3 gold to gain 4 weapons and either 1 donkey or 1 wood.', 
-    iconicDescription: '3[gold] [arrow-right] 4[weapons] + 1[donkey]|1[wood]',
+    iconicDescription: '3[gold] [arrow-right] \n 4[weapons] [space] 1[donkey]|1[wood]',
     era: 2 
   },
   { 
