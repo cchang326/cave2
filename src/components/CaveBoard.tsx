@@ -90,10 +90,10 @@ export const CaveBoard: React.FC<Props> = ({
           const hasRightWall = walls.includes(rightWallId);
           const hasBottomWall = walls.includes(bottomWallId);
 
-          const isTopPerimeter = !hasTopNeighbor && !space.openSides?.includes('top');
-          const isBottomPerimeter = !hasBottomNeighbor && !space.openSides?.includes('bottom');
-          const isLeftPerimeter = !hasLeftNeighbor && !space.openSides?.includes('left');
-          const isRightPerimeter = !hasRightNeighbor && !space.openSides?.includes('right');
+          const isTopPerimeter = space.openSides ? !space.openSides.includes('top') : !hasTopNeighbor;
+          const isBottomPerimeter = space.openSides ? !space.openSides.includes('bottom') : !hasBottomNeighbor;
+          const isLeftPerimeter = space.openSides ? !space.openSides.includes('left') : !hasLeftNeighbor;
+          const isRightPerimeter = space.openSides ? !space.openSides.includes('right') : !hasRightNeighbor;
 
           return (
             <div 

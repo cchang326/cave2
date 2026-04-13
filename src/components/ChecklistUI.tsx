@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChecklistItem, GoodsState } from '../types/game';
-import { Check, X, Play, ChevronRight, Undo2, Square, CheckSquare, Circle, Info, Drumstick, TreePine, Wheat, Leaf, Coins, GripVertical } from 'lucide-react';
+import { Check, X, Play, ChevronRight, Undo2, Square, CheckSquare, Circle, Info, Drumstick, TreePine, Wheat, Leaf, Coins, GripVertical, ListChecks } from 'lucide-react';
 import { StoneIcon } from './StoneIcon';
 import { ChecklistIconRenderer, getIconicChoiceLabel } from './ChecklistIconRenderer';
 import { IconicDescription } from './IconicDescription';
@@ -18,6 +18,7 @@ interface Props {
   onUndoAction?: () => void;
   canUndoAction?: boolean;
   onCancel?: () => void;
+  onToggle?: () => void;
 }
 
 const goodIcons: Record<string, React.ReactNode> = {
@@ -56,7 +57,8 @@ export const ChecklistUI: React.FC<Props> = ({
   onFinishTurn, 
   onUndoAction, 
   canUndoAction,
-  onCancel
+  onCancel,
+  onToggle
 }) => {
   if (isCollapsed) return null;
 
@@ -67,17 +69,33 @@ export const ChecklistUI: React.FC<Props> = ({
 
   return (
     <div 
-      className={`absolute top-2 left-2 z-[100] bg-stone-900 p-3.5 rounded-xl shadow-2xl border border-stone-600 flex flex-col transition-all duration-300 ${
+      className={`absolute top-2 left-2 z-[200] bg-stone-900 p-3.5 rounded-xl shadow-2xl border border-stone-600 flex flex-col transition-all duration-300 ${
         showIconicDescription ? 'w-full min-w-[16rem] max-w-[20rem]' : 'w-full min-w-[20rem] max-w-[24rem]'
       }`}
     >
       <div className="relative flex justify-center items-center mb-2 group">
+        {onToggle && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle();
+            }}
+            title="Hide Action Checklist"
+            className="absolute left-0 bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white p-1.5 rounded-md transition-all shadow-lg active:scale-95 cursor-pointer z-[210]"
+          >
+            <ListChecks className="w-4 h-4" />
+          </button>
+        )}
         <h2 className="text-stone-300 text-[10px] font-bold uppercase tracking-widest text-center px-6">Action Checklist</h2>
         {showUndo && (
           <button
-            onClick={onCancel || onUndoAction}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onCancel) onCancel();
+              else if (onUndoAction) onUndoAction();
+            }}
             title={onCancel ? "Cancel/Back" : "Undo Action"}
-            className="absolute right-0 bg-red-900/50 hover:bg-red-800/80 text-red-200 p-1.5 rounded transition-colors"
+            className="absolute right-0 bg-red-900/60 hover:bg-red-700 text-white p-1.5 rounded-md transition-all shadow-lg active:scale-95 cursor-pointer z-[210]"
           >
             <Undo2 className="w-4 h-4" />
           </button>

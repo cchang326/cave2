@@ -1390,10 +1390,12 @@ export default function App() {
   const accessibleSpaces = gameState.uiState.mode === 'EXCAVATE' ? getAccessibleSpaces(gameState.cave, gameState.walls, gameState.uiState.activeActionTile === 'undermining') : [];
 
   const handleUndoAction = () => {
+    console.log("Attempting to undo action. Snapshot exists:", !!gameState.uiState.undoSnapshot);
     if (gameState.uiState.undoSnapshot) {
       const nextState = JSON.parse(gameState.uiState.undoSnapshot);
       nextState.conversionHistory = [];
       setGameState(nextState);
+      showNotification("Action undone", 'success');
     }
   };
 
@@ -1673,10 +1675,17 @@ export default function App() {
                 highlightFurnishable={gameState.uiState.highlightFurnishable}
                 fixTileLocations={settingsState.fixTileLocations}
                 isChecklistCollapsed={isChecklistCollapsed}
+                checklistLength={gameState.uiState.checklist.length}
                 onRoomClick={handleRoomClick}
                 onToggleHighlight={handleToggleHighlight}
                 onToggleFixTileLocations={() => setSettingsState(prev => ({ ...prev, fixTileLocations: !prev.fixTileLocations }))}
                 onToggleChecklist={() => setIsChecklistCollapsed(!isChecklistCollapsed)}
+                onUndo={
+                  gameState.uiState.mode === 'FURNISH_SELECT_SPACE'
+                    ? () => setGameState(prev => ({...prev, uiState: {...prev.uiState, mode: 'FURNISH_SELECT_ROOM', selectedRoomId: undefined}}))
+                    : (['EXCAVATE', 'ROOM_ACTION', 'BUILD_WALL', 'REMOVE_WALL', 'PAY_DYNAMIC', 'FURNISH_SELECT_ROOM'].includes(gameState.uiState.mode) ? handleCancelItem : handleUndoAction)
+                }
+                canUndo={!!gameState.uiState.undoSnapshot || (['EXCAVATE', 'ROOM_ACTION', 'BUILD_WALL', 'REMOVE_WALL', 'PAY_DYNAMIC', 'FURNISH_SELECT_ROOM', 'FURNISH_SELECT_SPACE'].includes(gameState.uiState.mode))}
               >
                 <ChecklistUI 
                   checklist={gameState.uiState.checklist}
@@ -1688,7 +1697,8 @@ export default function App() {
                   onChoose={handleChooseChecklist}
                   onFinishTurn={handleFinishTurn}
                   onUndoAction={handleUndoAction}
-                  canUndoAction={gameState.uiState.mode === 'RESOLVING_TURN' && !!gameState.uiState.undoSnapshot}
+                  canUndoAction={!!gameState.uiState.undoSnapshot}
+                  onToggle={() => setIsChecklistCollapsed(!isChecklistCollapsed)}
                   onCancel={
                     gameState.uiState.mode === 'FURNISH_SELECT_SPACE'
                       ? () => setGameState(prev => ({...prev, uiState: {...prev.uiState, mode: 'FURNISH_SELECT_ROOM', selectedRoomId: undefined}}))

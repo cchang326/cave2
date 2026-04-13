@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { RoomTile, GoodsState, CaveSpace } from '../types/game';
 import { WallRequirementIcon } from './WallRequirementIcon';
 import { IconicDescription } from './IconicDescription';
-import { TreePine, Wheat, Leaf, Drumstick, Coins, Shield, Lock, LockOpen, ListChecks } from 'lucide-react';
+import { TreePine, Wheat, Leaf, Drumstick, Coins, Shield, Lock, LockOpen, ListChecks, Undo2 } from 'lucide-react';
 import { StoneIcon } from './StoneIcon';
 import { isValidRoomPlacement } from '../utils/walls';
 
@@ -18,10 +18,13 @@ interface Props {
   highlightFurnishable: boolean;
   fixTileLocations: boolean;
   isChecklistCollapsed: boolean;
+  checklistLength: number;
   onRoomClick?: (id: string) => void;
   onToggleHighlight: () => void;
   onToggleFixTileLocations: () => void;
   onToggleChecklist: () => void;
+  onUndo?: () => void;
+  canUndo?: boolean;
   children?: React.ReactNode;
 }
 
@@ -91,10 +94,13 @@ export const CentralDisplay: React.FC<Props> = ({
   highlightFurnishable,
   fixTileLocations,
   isChecklistCollapsed,
+  checklistLength,
   onRoomClick,
   onToggleHighlight,
   onToggleFixTileLocations,
   onToggleChecklist,
+  onUndo,
+  canUndo,
   children
 }) => {
   const isFurnishable = (tile: RoomTile): boolean => {
@@ -130,6 +136,17 @@ export const CentralDisplay: React.FC<Props> = ({
 
   return (
     <div className="bg-stone-800 p-4 rounded-xl shadow-lg border border-stone-700 min-h-[32rem] relative flex flex-col">
+      <style>
+        {`
+          @keyframes checklist-flash {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(234, 88, 12, 0.3); }
+          }
+          .animate-checklist-flash {
+            animation: checklist-flash 1.5s infinite;
+          }
+        `}
+      </style>
       {children}
       
       {/* Background Title */}
@@ -144,10 +161,27 @@ export const CentralDisplay: React.FC<Props> = ({
           <button 
             onClick={onToggleChecklist}
             title={isChecklistCollapsed ? "Show Action Checklist" : "Hide Action Checklist"}
-            className="flex items-center p-1 rounded hover:bg-stone-700/50 transition-colors group relative z-[110]"
+            className={`flex items-center p-1 rounded hover:bg-stone-700/50 transition-colors group relative z-[110] ${
+              isChecklistCollapsed && checklistLength > 0 ? 'animate-checklist-flash ring-1 ring-orange-500/30' : ''
+            }`}
           >
             <ListChecks className={`w-4 h-4 transition-colors ${!isChecklistCollapsed ? 'text-stone-200 group-hover:text-white' : 'text-stone-500/70 group-hover:text-stone-400'}`} />
+            {isChecklistCollapsed && checklistLength > 0 && (
+              <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-[7px] font-black w-3 h-3 rounded-full flex items-center justify-center shadow-sm">
+                {checklistLength}
+              </span>
+            )}
           </button>
+          
+          {isChecklistCollapsed && canUndo && onUndo && (
+            <button
+              onClick={onUndo}
+              title="Undo Action"
+              className="flex items-center p-1 rounded bg-red-900/30 hover:bg-red-800/50 text-red-300 transition-colors group ml-1"
+            >
+              <Undo2 className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
         <div className="flex-1" />
         <div className="w-24 flex items-center justify-end gap-1">
