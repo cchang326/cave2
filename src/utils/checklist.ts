@@ -1,4 +1,5 @@
 import { ChecklistItem, ActionBoardState, CaveSpace } from '../types/game';
+import { ERA_II_BOARD_ADDITIONAL_ACTIONS } from '../data/actionTiles';
 
 export function generateChecklistForAction(actionId: string, board: ActionBoardState, cave: CaveSpace[]): ChecklistItem[] {
   let items: ChecklistItem[] = [];
@@ -222,6 +223,78 @@ export function generateChecklistForAction(actionId: string, board: ActionBoardS
       break;
     default:
       items = [];
+  }
+
+  if (isEraII) {
+    const eraIIStage4Actions = [...board.availableActions, ...board.futureActions].filter(a => a.era === 2 && a.stage === 4);
+    const actionIdx = eraIIStage4Actions.findIndex(a => a.id === actionId);
+    
+    if (actionIdx !== -1) {
+      const ts = Date.now();
+      switch (actionIdx) {
+        case 0: // Gain 3 ore or 1 iron or 1 donkey
+          items.push({
+            id: `add_era2_0_${ts}`,
+            text: 'Additional Action: Gain 3 Ore OR 1 Iron OR 1 Donkey',
+            actionType: 'CHOICE',
+            optional: true,
+            status: 'TODO',
+            data: {
+              options: [
+                { label: 'Gain 3 Ore', cost: {}, items: [{ id: `add_era2_0_ore_${ts}`, text: 'Gain 3 Ore', actionType: 'GAIN', status: 'TODO', data: { goods: { ore: 3 } } }] },
+                { label: 'Gain 1 Iron', cost: {}, items: [{ id: `add_era2_0_iron_${ts}`, text: 'Gain 1 Iron', actionType: 'GAIN', status: 'TODO', data: { goods: { iron: 1 } } }] },
+                { label: 'Gain 1 Donkey', cost: {}, items: [{ id: `add_era2_0_donkey_${ts}`, text: 'Gain 1 Donkey', actionType: 'GAIN', status: 'TODO', data: { goods: { donkey: 1 } } }] }
+              ]
+            }
+          });
+          break;
+        case 1: // Pay 1/3/5/7 ore for 1/2/3/4 stone
+          items.push({
+            id: `add_era2_1_${ts}`,
+            text: 'Additional Action: Pay 1/3/5/7 Ore for 1/2/3/4 Stone',
+            actionType: 'CHOICE',
+            optional: true,
+            status: 'TODO',
+            data: {
+              options: [
+                { label: 'Pay 1 Ore for 1 Stone', cost: { ore: 1 }, items: [{ id: `add_era2_1_1_${ts}`, text: 'Pay 1 Ore for 1 Stone', actionType: 'GAIN', status: 'TODO', data: { payBefore: { ore: 1 }, goods: { stone: 1 } } }] },
+                { label: 'Pay 3 Ore for 2 Stone', cost: { ore: 3 }, items: [{ id: `add_era2_1_2_${ts}`, text: 'Pay 3 Ore for 2 Stone', actionType: 'GAIN', status: 'TODO', data: { payBefore: { ore: 3 }, goods: { stone: 2 } } }] },
+                { label: 'Pay 5 Ore for 3 Stone', cost: { ore: 5 }, items: [{ id: `add_era2_1_3_${ts}`, text: 'Pay 5 Ore for 3 Stone', actionType: 'GAIN', status: 'TODO', data: { payBefore: { ore: 5 }, goods: { stone: 3 } } }] },
+                { label: 'Pay 7 Ore for 4 Stone', cost: { ore: 7 }, items: [{ id: `add_era2_1_4_${ts}`, text: 'Pay 7 Ore for 4 Stone', actionType: 'GAIN', status: 'TODO', data: { payBefore: { ore: 7 }, goods: { stone: 4 } } }] }
+              ]
+            }
+          });
+          break;
+        case 2: // Pay n iron for n weapon
+          items.push({
+            id: `add_era2_2_${ts}`,
+            text: 'Additional Action: Pay n Iron for n Weapons',
+            actionType: 'CHOICE',
+            optional: true,
+            status: 'TODO',
+            data: {
+              options: [
+                { label: 'Pay 1 Iron for 1 Weapon', cost: { iron: 1 }, items: [{ id: `add_era2_2_1_${ts}`, text: 'Pay 1 Iron for 1 Weapon', actionType: 'GAIN', status: 'TODO', data: { payBefore: { iron: 1 }, goods: { weapons: 1 } } }] },
+                { label: 'Pay 2 Iron for 2 Weapons', cost: { iron: 2 }, items: [{ id: `add_era2_2_2_${ts}`, text: 'Pay 2 Iron for 2 Weapons', actionType: 'GAIN', status: 'TODO', data: { payBefore: { iron: 2 }, goods: { weapons: 2 } } }] },
+                { label: 'Pay 3 Iron for 3 Weapons', cost: { iron: 3 }, items: [{ id: `add_era2_2_3_${ts}`, text: 'Pay 3 Iron for 3 Weapons', actionType: 'GAIN', status: 'TODO', data: { payBefore: { iron: 3 }, goods: { weapons: 3 } } }] },
+                { label: 'Pay 4 Iron for 4 Weapons', cost: { iron: 4 }, items: [{ id: `add_era2_2_4_${ts}`, text: 'Pay 4 Iron for 4 Weapons', actionType: 'GAIN', status: 'TODO', data: { payBefore: { iron: 4 }, goods: { weapons: 4 } } }] },
+                { label: 'Pay 5 Iron for 5 Weapons', cost: { iron: 5 }, items: [{ id: `add_era2_2_5_${ts}`, text: 'Pay 5 Iron for 5 Weapons', actionType: 'GAIN', status: 'TODO', data: { payBefore: { iron: 5 }, goods: { weapons: 5 } } }] }
+              ]
+            }
+          });
+          break;
+        case 3: // Gain 2 weapons if you have more weapons than the opponent
+          items.push({
+            id: `add_era2_3_${ts}`,
+            text: 'Additional Action: Gain 2 Weapons (if more than opponent)',
+            actionType: 'GAIN',
+            optional: true,
+            status: 'TODO',
+            data: { goods: { weapons: 2 } }
+          });
+          break;
+      }
+    }
   }
 
   return decorateWithPassives(items, actionId, cave);

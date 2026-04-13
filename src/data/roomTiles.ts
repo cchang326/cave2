@@ -532,7 +532,7 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 3, max: 4, configuration: 'any' },
     trigger: 'none',
     effectDescription: 'No effect.',
-    iconicDescription: '[helmet]',
+    iconicDescription: '',
     era: 2,
     excavatable: true
   },

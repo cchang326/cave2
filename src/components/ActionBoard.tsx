@@ -54,11 +54,11 @@ export const ActionBoard: React.FC<Props> = ({
       </button>
       
       {additionalAction && (
-        <div className="w-32 bg-stone-900 border border-stone-700 rounded-lg p-2 flex flex-col items-center gap-1">
-          <span className="text-[8px] text-stone-500 uppercase font-bold tracking-tighter">Additional Action</span>
-          <IconicDescription description={additionalAction.iconic} className="justify-center" />
+        <div className="w-32 h-16 bg-stone-200 border border-stone-400 rounded-lg p-1 flex flex-col items-center justify-center gap-0 shadow-sm">
+          <span className="text-[8px] text-stone-600 uppercase font-bold tracking-tighter">Additional Action</span>
+          <IconicDescription description={additionalAction.iconic} className="justify-center scale-[0.85] origin-center" />
           {additionalAction.requirement && (
-            <span className="text-[7px] text-orange-400/80 leading-tight text-center">{additionalAction.requirement}</span>
+            <span className="text-[7px] text-amber-700 leading-tight text-center font-bold scale-90">{additionalAction.requirement}</span>
           )}
         </div>
       )}
@@ -77,11 +77,11 @@ export const ActionBoard: React.FC<Props> = ({
       </div>
       
       {additionalAction && (
-        <div className="w-32 bg-stone-900/50 border border-stone-800 rounded-lg p-2 flex flex-col items-center gap-1 opacity-50">
+        <div className="w-32 h-16 bg-stone-200/50 border border-stone-700 rounded-lg p-1 flex flex-col items-center justify-center gap-0 opacity-50 shadow-inner">
           <span className="text-[8px] text-stone-600 uppercase font-bold tracking-tighter">Additional Action</span>
-          <IconicDescription description={additionalAction.iconic} className="justify-center grayscale" />
+          <IconicDescription description={additionalAction.iconic} className="justify-center grayscale scale-[0.85] origin-center" />
           {additionalAction.requirement && (
-            <span className="text-[7px] text-stone-600 leading-tight text-center">{additionalAction.requirement}</span>
+            <span className="text-[7px] text-stone-600 leading-tight text-center font-bold scale-90">{additionalAction.requirement}</span>
           )}
         </div>
       )}

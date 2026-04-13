@@ -60,10 +60,10 @@ export const ERA_II_ACTIONS: ActionTile[] = [
 ];
 
 export const ERA_II_BOARD_ADDITIONAL_ACTIONS = [
-  { description: 'Gain 1 wood', iconic: '+1[wood]' },
-  { description: 'Gain 1 stone', iconic: '+1[stone]' },
-  { description: 'Gain 1 emmer', iconic: '+1[emmer]' },
-  { description: 'Gain 2 weapons', iconic: '+2[weapons]', requirement: 'More weapons than opponent' },
+  { description: 'Gain 3 ore or 1 iron or 1 donkey', iconic: '+3[ore] | +1[iron] | +1[donkey]' },
+  { description: 'Pay 1/3/5/7 ore for 1/2/3/4 stone', iconic: '1|3|5|7[ore] [arrow-right] \n 1|2|3|4[stone]' },
+  { description: 'Pay n iron for n weapon', iconic: '1[iron] -> 1[weapons]\n{any number of times}' },
+  { description: 'Gain 2 weapons if you have more weapons than the opponent', iconic: '+2[weapon]', requirement: 'More weapons than opponent' },
 ];
 
 function shuffle<T>(array: T[]): T[] {

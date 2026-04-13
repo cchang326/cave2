@@ -856,7 +856,7 @@ export default function App() {
         { row: 2, col: -2, state: 'FACE_DOWN' as const, openSides: ['top', 'bottom', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
         { row: 2, col: -1, state: 'FACE_DOWN' as const, openSides: ['top', 'bottom', 'left', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
         { row: 3, col: -2, state: 'FACE_DOWN' as const, openSides: ['top', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
-        { row: 3, col: -1, state: 'ENTRANCE' as const, openSides: ['top', 'left', 'right', 'bottom'] as ("top" | "bottom" | "left" | "right")[], tile: ROOM_TILES_MAP.caveEntrance }
+        { row: 3, col: -1, state: 'CROSSED_PICKAXES' as const, openSides: ['top', 'left', 'right', 'bottom'] as ("top" | "bottom" | "left" | "right")[], tile: undefined }
       ];
 
       for (const { row, col, state, openSides, tile: coordTile } of eraIICoords) {
@@ -1111,11 +1111,18 @@ export default function App() {
           if (doingItem.data) {
             doingItem.data = { ...doingItem.data, count: nextState.uiState.excavationsLeft };
             
-            // Add food bonus if space is (1,1) or (3,1)
-            if ((space.row === 1 && space.col === 1) || (space.row === 3 && space.col === 1)) {
+            // Add food bonus if space is (1,1), (3,1) or (2,-1)
+            if ((space.row === 1 && space.col === 1) || (space.row === 3 && space.col === 1) || (space.row === 2 && space.col === -1)) {
               doingItem.data.gainAfter = { 
                 ...(doingItem.data.gainAfter || {}), 
                 food: (doingItem.data.gainAfter?.food || 0) + 1 
+              };
+            }
+            // Add ore bonus if space is (2,-2)
+            if (space.row === 2 && space.col === -2) {
+              doingItem.data.gainAfter = { 
+                ...(doingItem.data.gainAfter || {}), 
+                ore: (doingItem.data.gainAfter?.ore || 0) + 1 
               };
             }
           }
@@ -1402,6 +1409,14 @@ export default function App() {
   const handleExchange = (from: keyof GoodsState, to: keyof GoodsState) => {
     setGameState(prev => {
       if (prev.goods[from] <= 0) return prev;
+      
+      // Enforce max limits from constants
+      const limit = (to === 'gold' || to === 'weapons') ? MAX_GOLD_WEAPON_LIMIT : MAX_RESOURCE_LIMIT;
+      if (prev.goods[to] >= limit) {
+        showNotification(`${to.charAt(0).toUpperCase() + to.slice(1)} is already at maximum capacity`, 'error');
+        return prev;
+      }
+
       const nextState = { ...prev, goods: { ...prev.goods } };
       nextState.goods[from] -= 1;
       nextState.goods[to] += 1;
@@ -1415,6 +1430,14 @@ export default function App() {
       if (prev.conversionHistory.length === 0) return prev;
       const nextHistory = [...prev.conversionHistory];
       const lastFrom = nextHistory.pop()!;
+      
+      // Enforce max limits from constants when undoing
+      const limit = (lastFrom === 'gold' || lastFrom === 'weapons') ? MAX_GOLD_WEAPON_LIMIT : MAX_RESOURCE_LIMIT;
+      if (prev.goods[lastFrom] >= limit) {
+        showNotification(`Cannot undo: ${lastFrom.charAt(0).toUpperCase() + lastFrom.slice(1)} is already at maximum capacity`, 'error');
+        return prev;
+      }
+
       const nextState = { ...prev, goods: { ...prev.goods }, conversionHistory: nextHistory };
       nextState.goods[lastFrom] += 1;
       nextState.goods.food -= 1;

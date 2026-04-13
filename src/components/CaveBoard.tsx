@@ -1,6 +1,7 @@
 import React from 'react';
 import { CaveSpace, RoomTile } from '../types/game';
 import { Pickaxe, Ban, Drumstick, Shield } from 'lucide-react';
+import { OreIcon } from './OreIcon';
 import { isValidRoomPlacement } from '../utils/walls';
 import { WallRequirementIcon } from './WallRequirementIcon';
 import { IconicDescription } from './IconicDescription';
@@ -139,16 +140,31 @@ export const CaveBoard: React.FC<Props> = ({
                   </div>
                 )}
 
-                {space.state !== 'FACE_DOWN' && ((space.row === 1 && space.col === 1) || (space.row === 3 && space.col === 1)) && (
-                  <div className="absolute top-1 left-1 flex items-center gap-0.5 bg-orange-500/10 px-1 rounded border border-orange-500/20 pointer-events-none">
-                    <span className="text-orange-400/60 text-[8px] font-bold">+1</span>
-                    <Drumstick className="w-2 h-2 text-orange-500/60" />
+                {space.state !== 'FACE_DOWN' && (
+                  (space.row === 1 && space.col === 1) || 
+                  (space.row === 3 && space.col === 1) ||
+                  (space.row === 2 && space.col === -1)
+                ) && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                    <div className="flex items-center gap-1">
+                      <span className="text-orange-400 text-2xl font-black">+1</span>
+                      <Drumstick className="w-5 h-5 text-orange-500" />
+                    </div>
+                  </div>
+                )}
+
+                {space.state !== 'FACE_DOWN' && (space.row === 2 && space.col === -2) && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                    <div className="flex items-center gap-1">
+                      <span className="text-zinc-400 text-2xl font-black">+1</span>
+                      <OreIcon className="w-5 h-5 text-zinc-500" />
+                    </div>
                   </div>
                 )}
                 
                 {space.state === 'CROSSED_PICKAXES' && (
                   <div className="relative flex items-center justify-center">
-                    {space.row === 2 && space.col === 0 ? (
+                    {(space.row === 2 && space.col === 0) || (space.row === 3 && space.col === -1) ? (
                       <div className="relative flex items-center justify-center">
                         <Pickaxe className="w-10 h-10 text-stone-600 opacity-40" />
                         <div className="absolute inset-0 flex items-center justify-center">

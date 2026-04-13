@@ -69,40 +69,43 @@ export const ChecklistUI: React.FC<Props> = ({
 
   return (
     <div 
-      className={`absolute top-2 left-2 z-[200] bg-stone-900 p-4 rounded-xl shadow-2xl border border-stone-600 flex flex-col transition-all duration-300 ${
+      className={`absolute top-2 left-2 z-[200] bg-stone-900 py-4 rounded-xl shadow-2xl border border-stone-600 flex flex-col transition-all duration-300 ${
         showIconicDescription ? 'w-80' : 'w-[26rem]'
       }`}
     >
-      <div className="relative flex justify-center items-center mb-4 group">
-        {onToggle && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggle();
-            }}
-            title="Hide Action Checklist"
-            className="absolute left-0 bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white p-1.5 rounded-md transition-all shadow-lg active:scale-95 cursor-pointer z-[210]"
-          >
-            <ListChecks className="w-4 h-4" />
-          </button>
-        )}
-        <h2 className="text-stone-300 text-[10px] font-bold uppercase tracking-widest text-center px-8">Action Checklist</h2>
-        {showUndo && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (onCancel) onCancel();
-              else if (onUndoAction) onUndoAction();
-            }}
-            title={onCancel ? "Cancel/Back" : "Undo Action"}
-            className="absolute right-0 bg-red-900/60 hover:bg-red-700 text-white p-1.5 rounded-md transition-all shadow-lg active:scale-95 cursor-pointer z-[210]"
-          >
-            <Undo2 className="w-4 h-4" />
-          </button>
-        )}
+      <div className="px-4 mb-4">
+        <div className="relative flex justify-center items-center group">
+          {onToggle && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggle();
+              }}
+              title="Hide Action Checklist"
+              className="absolute left-0 bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white p-1.5 rounded-md transition-all shadow-lg active:scale-95 cursor-pointer z-[210]"
+            >
+              <ListChecks className="w-4 h-4" />
+            </button>
+          )}
+          <h2 className="text-stone-300 text-[10px] font-bold uppercase tracking-widest text-center px-8">Action Checklist</h2>
+          {showUndo && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onCancel) onCancel();
+                else if (onUndoAction) onUndoAction();
+              }}
+              title={onCancel ? "Cancel/Back" : "Undo Action"}
+              className="absolute right-0 bg-red-900/60 hover:bg-red-700 text-white p-1.5 rounded-md transition-all shadow-lg active:scale-95 cursor-pointer z-[210]"
+            >
+              <Undo2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
       
-      <div className="space-y-1.5 overflow-y-auto custom-scrollbar max-h-[70vh] pr-1 -mr-1">
+      <div className="px-4 flex-1 overflow-hidden">
+        <div className="space-y-1.5 overflow-y-auto custom-scrollbar max-h-[70vh] pr-1 -mr-1">
         {checklist.length === 0 ? (
           <div className="py-12 flex flex-col items-center justify-center text-stone-500 border border-dashed border-stone-700/50 rounded-lg bg-stone-900/20">
             <Square className="w-8 h-8 mb-2 opacity-10" />
@@ -238,14 +241,17 @@ export const ChecklistUI: React.FC<Props> = ({
           ))
         )}
       </div>
+    </div>
 
       {allDoneOrSkipped && checklist.length > 0 && (
-        <button
-          onClick={onFinishTurn}
-          className="mt-4 w-full py-2.5 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-lg transition-all transform hover:scale-[1.02]"
-        >
-          Finish Turn
-        </button>
+        <div className="px-4 mt-4">
+          <button
+            onClick={onFinishTurn}
+            className="w-full py-2.5 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-lg transition-all transform hover:scale-[1.02]"
+          >
+            Finish Turn
+          </button>
+        </div>
       )}
     </div>
   );
