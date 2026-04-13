@@ -69,11 +69,11 @@ export const ChecklistUI: React.FC<Props> = ({
 
   return (
     <div 
-      className={`absolute top-2 left-2 z-[200] bg-stone-900 p-3.5 rounded-xl shadow-2xl border border-stone-600 flex flex-col transition-all duration-300 ${
-        showIconicDescription ? 'w-full min-w-[16rem] max-w-[20rem]' : 'w-full min-w-[20rem] max-w-[24rem]'
+      className={`absolute top-2 left-2 z-[200] bg-stone-900 p-4 rounded-xl shadow-2xl border border-stone-600 flex flex-col transition-all duration-300 ${
+        showIconicDescription ? 'w-80' : 'w-[26rem]'
       }`}
     >
-      <div className="relative flex justify-center items-center mb-2 group">
+      <div className="relative flex justify-center items-center mb-4 group">
         {onToggle && (
           <button
             onClick={(e) => {
@@ -86,7 +86,7 @@ export const ChecklistUI: React.FC<Props> = ({
             <ListChecks className="w-4 h-4" />
           </button>
         )}
-        <h2 className="text-stone-300 text-[10px] font-bold uppercase tracking-widest text-center px-6">Action Checklist</h2>
+        <h2 className="text-stone-300 text-[10px] font-bold uppercase tracking-widest text-center px-8">Action Checklist</h2>
         {showUndo && (
           <button
             onClick={(e) => {
@@ -102,7 +102,7 @@ export const ChecklistUI: React.FC<Props> = ({
         )}
       </div>
       
-      <div className="space-y-1.5 overflow-y-auto pr-1 custom-scrollbar max-h-[70vh]">
+      <div className="space-y-1.5 overflow-y-auto custom-scrollbar max-h-[70vh] pr-1 -mr-1">
         {checklist.length === 0 ? (
           <div className="py-12 flex flex-col items-center justify-center text-stone-500 border border-dashed border-stone-700/50 rounded-lg bg-stone-900/20">
             <Square className="w-8 h-8 mb-2 opacity-10" />

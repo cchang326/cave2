@@ -145,8 +145,8 @@ function initializeGame(): GameState {
       if (row === 0 && col === 0) openSides = ['bottom', 'right'];
       else if (row === 1 && col === 0) openSides = ['top', 'bottom', 'right'];
       else if (row === 2 && col === 0) openSides = ['top', 'bottom', 'right'];
-      else if (row === 3 && col === 0) openSides = ['top', 'right', 'left']; // Entrance open to left, wall at bottom
-      else if (row === 4 && col === 0) openSides = ['right']; // Wall at top, left, and bottom
+      else if (row === 3 && col === 0) openSides = ['top', 'right', 'left', 'bottom']; // Entrance open to left and bottom
+      else if (row === 4 && col === 0) openSides = ['right', 'top']; // Wall at left and bottom
       else if (row === 0 && col === 1) openSides = ['bottom', 'left'];
       else if (row === 1 && col === 1) openSides = ['top', 'bottom', 'left'];
       else if (row === 2 && col === 1) openSides = ['top', 'bottom', 'left'];

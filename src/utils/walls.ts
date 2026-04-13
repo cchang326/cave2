@@ -17,8 +17,8 @@ export function getSpaceWalls(space: CaveSpace, internalWalls: string[]) {
   } else {
     // Fallback for original Era I board without openSides
     if (row === 0) top = true;
-    if (row === 4 && (col === 0 || col === 2)) top = true; // Wall between Entrance and (4,0), and top of (4,2)
-    if (row === 4 || (row === 3 && col === 0)) bottom = true; // Bottom of board and bottom of Entrance
+    if (row === 4 && col === 2) top = true; 
+    if (row === 4) bottom = true; // Bottom of board
     if (col === 0 && row !== 3) left = true;
     if (col === 1 && row !== 4) right = true;
     if (col === 2 && row === 4) right = true;
