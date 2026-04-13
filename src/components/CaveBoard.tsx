@@ -242,13 +242,15 @@ export const CaveBoard: React.FC<Props> = ({
         })}
         {children && (
           <div 
-            className="z-20"
+            className="z-20 ml-1.5 pointer-events-none"
             style={{ 
               gridColumn: 3 - minCol, 
-              gridRow: `1 / span ${rowCount}` 
+              gridRow: `1 / 4` 
             }}
           >
-            {children}
+            <div className="pointer-events-auto">
+              {children}
+            </div>
           </div>
         )}
       </div>

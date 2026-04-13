@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Settings, X, Trophy, Github, ExternalLink } from 'lucide-react';
 import { GameState, RoomTile } from '../types/game';
+import { MAX_RESOURCE_LIMIT, MAX_GOLD_WEAPON_LIMIT } from '../constants';
 import { calculateScore } from '../utils/scoring';
 import { ROOM_TILES } from '../data/roomTiles';
 
@@ -26,12 +27,16 @@ export const SettingsPanel: React.FC<Props> = ({ settingsState, setSettingsState
       ...prev,
       cheatsUsed: true,
       goods: {
-        wood: 9,
-        stone: 9,
-        emmer: 9,
-        flax: 9,
-        food: 9,
-        gold: 19
+        wood: MAX_RESOURCE_LIMIT,
+        stone: MAX_RESOURCE_LIMIT,
+        emmer: MAX_RESOURCE_LIMIT,
+        flax: MAX_RESOURCE_LIMIT,
+        food: MAX_RESOURCE_LIMIT,
+        gold: MAX_GOLD_WEAPON_LIMIT,
+        donkey: MAX_RESOURCE_LIMIT,
+        ore: MAX_RESOURCE_LIMIT,
+        iron: MAX_RESOURCE_LIMIT,
+        weapons: MAX_GOLD_WEAPON_LIMIT
       }
     }));
   };

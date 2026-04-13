@@ -21,6 +21,7 @@ import { userService } from './services/userService';
 import { scoreService } from './services/scoreService';
 import { generateChecklistForAction, getRoomActionChecklistItems } from './utils/checklist';
 import { isValidRoomPlacement } from './utils/walls';
+import { MAX_RESOURCE_LIMIT, MAX_GOLD_WEAPON_LIMIT } from './constants';
 
 function canAfford(goods: GoodsState, cost?: Partial<GoodsState>, condition?: any): boolean {
   if (cost) {
@@ -101,6 +102,12 @@ function addGoods(current: GameState['goods'], gains: Partial<GameState['goods']
   for (const key in gains) {
     const k = key as keyof GameState['goods'];
     next[k] = next[k] + (gains[k] || 0);
+    // Enforce max limits from constants
+    if (k === 'gold' || k === 'weapons') {
+      next[k] = Math.min(MAX_GOLD_WEAPON_LIMIT, next[k]);
+    } else {
+      next[k] = Math.min(MAX_RESOURCE_LIMIT, next[k]);
+    }
   }
   return next;
 }
@@ -393,6 +400,7 @@ export default function App() {
         hasAdditionalCavern: true,
         cheatsUsed: prev.cheatsUsed || !!prev.uiState.isTriggeredByCheat,
         cave: [...prev.cave],
+        walls: [...prev.walls],
         uiState: { 
           ...prev.uiState, 
           showAdditionalCavernChoice: false,
@@ -400,19 +408,29 @@ export default function App() {
         }
       };
 
+      // Preserve existing walls that become internal:
+      // 1. Wall between (3,1) and (3,2)
+      // 2. Wall between (4,2) and (3,2)
+      const existingWalls = ['3,1-3,2', '3,2-4,2'];
+      existingWalls.forEach(w => {
+        if (!nextState.walls.includes(w)) {
+          nextState.walls.push(w);
+        }
+      });
+
       const openSides: ('top' | 'bottom' | 'left' | 'right')[] = [];
       if (walls === 2) {
-        // 2 adjacent walls (e.g., top and left are natural, so bottom and right are open)
-        openSides.push('bottom', 'right');
+        // 2-wall: already has Left and Bottom (internal). So it's open to Top and Right.
+        openSides.push('top', 'right');
       } else {
-        // 3 walls (e.g., top, left, right are natural, so bottom is open)
-        openSides.push('bottom');
+        // 3-wall: add a wall at the top. So it's only open to Right.
+        openSides.push('right');
       }
 
       nextState.cave.push({
         id: 'additional-cavern',
-        row: 4,
-        col: 4,
+        row: 3,
+        col: 2,
         state: 'EMPTY',
         openSides
       });
@@ -1448,7 +1466,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-stone-900 text-stone-100 p-4 md:p-8 font-sans flex flex-col">
-      <div className="max-w-[1580px] mx-auto w-full space-y-6 flex-1 flex flex-col">
+      <div className="max-w-[1570px] mx-auto w-full space-y-6 flex-1 flex flex-col">
         {gameState.uiState.showScoreSummary && (
           <ScoreSummary 
             gameState={gameState} 

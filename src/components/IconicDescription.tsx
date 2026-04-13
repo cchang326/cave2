@@ -1,6 +1,8 @@
 import React from 'react';
-import { TreePine, Wheat, Leaf, Drumstick, Coins, ArrowRight, ArrowUpToLine, Pickaxe, SquareArrowDown } from 'lucide-react';
+import { TreePine, Wheat, Leaf, Drumstick, Coins, ArrowRight, ArrowUpToLine, Pickaxe, SquareArrowDown, Cuboid, Sword } from 'lucide-react';
 import { StoneIcon } from './StoneIcon';
+import { OreIcon } from './OreIcon';
+import { DonkeyIcon } from './DonkeyIcon';
 
 interface Props {
   description: string;
@@ -53,6 +55,13 @@ export const IconicDescription: React.FC<Props> = ({ description, className = ""
         return <TreePine key={index} className={`${iconBase} text-amber-900 inline-block align-middle`} />;
       case '[stone]':
         return <StoneIcon key={index} className={`${iconBase} text-stone-600 inline-block align-middle`} />;
+      case '[ore]':
+        return <OreIcon key={index} className={`${iconBase} text-zinc-950 inline-block align-middle`} />;
+      case '[iron]':
+        return <Cuboid key={index} className={`${iconBase} text-blue-300 inline-block align-middle`} />;
+      case '[weapon]':
+      case '[weapons]':
+        return <Sword key={index} className={`${iconBase} text-red-400 inline-block align-middle`} />;
       case '[emmer]':
         return <Wheat key={index} className={`${iconBase} text-yellow-800 inline-block align-middle`} />;
       case '[flax]':
@@ -68,6 +77,8 @@ export const IconicDescription: React.FC<Props> = ({ description, className = ""
         return <Drumstick key={index} className={`${iconBase} text-orange-800 inline-block align-middle`} />;
       case '[gold]':
         return <Coins key={index} className={`${iconBase} text-amber-600 inline-block align-middle`} />;
+      case '[donkey]':
+        return <DonkeyIcon key={index} className={`${iconBase} text-orange-950 inline-block align-middle`} />;
       case '[blue-room]':
         return <div key={index} className={`${iconBase} bg-blue-600 rounded-sm border border-blue-700 inline-block shadow-sm align-middle`} />;
       case '[furnish]':

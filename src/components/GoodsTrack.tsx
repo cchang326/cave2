@@ -1,7 +1,15 @@
 import React from 'react';
 import { GoodsState } from '../types/game';
-import { TreePine, Wheat, Leaf, Drumstick, Coins, ArrowRightLeft, RotateCcw, PawPrint, Mountain, Hammer, Sword } from 'lucide-react';
+import { TreePine, Wheat, Leaf, Drumstick, Coins, ArrowRightLeft, RotateCcw, Hammer, Sword, Cuboid } from 'lucide-react';
 import { StoneIcon } from './StoneIcon';
+import { OreIcon } from './OreIcon';
+import { DonkeyIcon } from './DonkeyIcon';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../../components/ui/tooltip";
 
 interface Props {
   goods: GoodsState;
@@ -12,17 +20,18 @@ interface Props {
 }
 
 export const GoodsTrack: React.FC<Props> = ({ goods, onExchange, onUndoExchange, canUndoExchange, era }) => {
+  const iconSize = "w-[18px] h-[18px]";
   const goodIcons = {
-    wood: <TreePine className="w-5 h-5 text-amber-700" />,
-    stone: <StoneIcon className="w-5 h-5 text-gray-400" />,
-    emmer: <Wheat className="w-5 h-5 text-yellow-500" />,
-    flax: <Leaf className="w-5 h-5 text-green-500" />,
-    food: <Drumstick className="w-5 h-5 text-orange-500" />,
-    gold: <Coins className="w-5 h-5 text-yellow-400" />,
-    donkey: <PawPrint className="w-5 h-5 text-stone-400" />,
-    ore: <Mountain className="w-5 h-5 text-stone-500" />,
-    iron: <Hammer className="w-5 h-5 text-blue-300" />,
-    weapons: <Sword className="w-5 h-5 text-red-400" />,
+    wood: <TreePine className={`${iconSize} text-amber-700`} />,
+    stone: <StoneIcon className={`${iconSize} text-gray-400`} />,
+    emmer: <Wheat className={`${iconSize} text-yellow-500`} />,
+    flax: <Leaf className={`${iconSize} text-green-500`} />,
+    food: <Drumstick className={`${iconSize} text-orange-500`} />,
+    gold: <Coins className={`${iconSize} text-yellow-400`} />,
+    donkey: <DonkeyIcon className={`${iconSize} text-orange-700`} />,
+    ore: <OreIcon className={`${iconSize} text-zinc-500`} />,
+    iron: <Cuboid className={`${iconSize} text-blue-300`} />,
+    weapons: <Sword className={`${iconSize} text-red-400`} />,
   };
 
   const goodOrder: (keyof GoodsState)[] = era === 1 
@@ -33,46 +42,50 @@ export const GoodsTrack: React.FC<Props> = ({ goods, onExchange, onUndoExchange,
     ? ['emmer', 'flax', 'gold']
     : ['emmer', 'flax', 'gold', 'donkey'];
 
-  return (
-    <div className="bg-stone-800/90 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-stone-700 w-32 flex flex-col gap-2">
-      <div className="flex flex-col gap-1.5 pr-1">
-        {goodOrder.map((good) => (
-          <div key={good} className="flex items-center bg-stone-900/80 px-2 py-1.5 rounded-lg border border-stone-700 w-full justify-between group relative">
-            <div className="flex items-center gap-2">
-              <div className="flex-shrink-0">{goodIcons[good]}</div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-stone-500 text-[8px] uppercase tracking-tighter leading-none mb-0.5 truncate">{good}</span>
-                <span className="text-white font-mono text-base font-bold leading-none">{goods[good]}</span>
-              </div>
-            </div>
-            
-            {onExchange && exchangeable.includes(good) && (
-              <button
-                onClick={() => onExchange(good, 'food')}
-                disabled={goods[good] <= 0}
-                className="p-1 bg-stone-800/50 border border-stone-700 hover:bg-stone-700 disabled:opacity-30 disabled:hover:bg-transparent rounded-md transition-all text-amber-500/70 hover:text-amber-400 hover:border-amber-500/30 shadow-sm"
-                title={`Exchange 1 ${good} for 1 food`}
-              >
-                <ArrowRightLeft className="w-3 h-3" />
-              </button>
-            )}
+  const renderGoodItem = (good: keyof GoodsState) => (
+    <div key={good} className="flex items-center bg-stone-900/80 px-1.5 py-0.5 rounded-md border border-stone-700/50 w-full justify-between group relative h-8">
+      <Tooltip>
+        <TooltipTrigger>
+          <div className="flex items-center gap-2">
+            <div className="flex-shrink-0">{goodIcons[good]}</div>
+            <span className="text-white font-mono text-[15px] font-bold leading-none">{goods[good]}</span>
           </div>
-        ))}
+        </TooltipTrigger>
+        <TooltipContent side="right" className="bg-stone-900 border-stone-700 text-stone-200 text-xs capitalize">
+          {good}
+        </TooltipContent>
+      </Tooltip>
+      
+      <div className="flex items-center gap-1">
+        {good === 'food' && onUndoExchange && canUndoExchange && (
+          <button
+            onClick={onUndoExchange}
+            title="Undo last conversion"
+            className="p-0.5 bg-orange-600/20 border border-orange-500/50 hover:bg-orange-600/40 text-orange-400 rounded transition-all shadow-sm"
+          >
+            <RotateCcw className="w-3 h-3" />
+          </button>
+        )}
+
+        {onExchange && exchangeable.includes(good) && (
+          <button
+            onClick={() => onExchange(good, 'food')}
+            disabled={goods[good] <= 0}
+            className="p-0.5 bg-stone-800/50 border border-stone-700 hover:bg-stone-700 disabled:opacity-30 disabled:hover:bg-transparent rounded transition-all text-amber-500/70 hover:text-amber-400 hover:border-amber-500/30 shadow-sm"
+            title={`Exchange 1 ${good} for 1 food`}
+          >
+            <ArrowRightLeft className="w-3 h-3" />
+          </button>
+        )}
       </div>
-      {onUndoExchange && (
-        <button
-          onClick={onUndoExchange}
-          disabled={!canUndoExchange}
-          title="Undo last conversion"
-          className={`flex items-center justify-center py-2 rounded-lg border transition-all shadow-md w-full
-            ${canUndoExchange 
-              ? 'bg-orange-600/20 border-orange-500 text-orange-400 hover:bg-orange-600/30 active:bg-orange-600/40' 
-              : 'bg-stone-800 border-stone-700 text-stone-600 opacity-50 cursor-not-allowed'}
-          `}
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-        </button>
-      )}
     </div>
+  );
+
+  return (
+    <TooltipProvider delay={200}>
+      <div className="bg-stone-800/95 backdrop-blur-sm p-1.5 rounded-lg shadow-xl border border-stone-700 w-24 flex flex-col gap-0.5">
+        {goodOrder.map(renderGoodItem)}
+      </div>
+    </TooltipProvider>
   );
 };
