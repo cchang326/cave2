@@ -80,7 +80,7 @@ export interface ChecklistItem {
 }
 
 export interface UIState {
-  mode: 'IDLE' | 'EXCAVATE' | 'FURNISH_SELECT_ROOM' | 'FURNISH_SELECT_SPACE' | 'ROOM_ACTION' | 'BUILD_WALL' | 'REMOVE_WALL' | 'PAY_DYNAMIC' | 'RESOLVING_TURN' | 'GAME_OVER' | 'LEADERBOARD' | 'DRAFTING' | 'DRAFTING_PLACE_ROOM';
+  mode: 'IDLE' | 'EXCAVATE' | 'FURNISH_SELECT_ROOM' | 'FURNISH_SELECT_SPACE' | 'ROOM_ACTION' | 'BUILD_WALL' | 'REMOVE_WALL' | 'PAY_DYNAMIC' | 'RESOLVING_TURN' | 'GAME_OVER' | 'LEADERBOARD' | 'DRAFTING' | 'DRAFTING_PLACE_ROOM' | 'DRAFTING_COMPLETE';
   excavationsLeft: number;
   furnishingsLeft: number;
   roomActionsLeft: number;
@@ -108,7 +108,8 @@ export interface GameState {
   walls: string[];
   actionBoard: ActionBoardState;
   centralDisplay: (RoomTile | null)[];
-  roomTileDeck: RoomTile[];
+  fdp1: RoomTile[];
+  fdp2: RoomTile[];
   uiState: UIState;
   hasAdditionalCavern: boolean;
   conversionHistory: (keyof GoodsState)[];

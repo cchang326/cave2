@@ -73,7 +73,8 @@ export const SettingsPanel: React.FC<Props> = ({ settingsState, setSettingsState
         cheatsUsed: true,
         cave: newCave,
         centralDisplay: newCentralDisplay,
-        roomTileDeck: []
+        fdp1: [],
+        fdp2: []
       };
     });
   };

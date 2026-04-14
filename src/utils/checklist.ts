@@ -36,8 +36,8 @@ export function generateChecklistForAction(actionId: string, board: ActionBoardS
           optional: true,
           data: {
             options: [
-              { label: 'Excavate 1 Cavern', cost: {}, items: [{ id: 'e1', text: 'Excavate 1 Cavern', actionType: 'EXCAVATE', status: 'TODO', data: { count: 1 } }] },
-              { label: 'Pay 2 Food to Excavate 2 Caverns', cost: { food: 2 }, items: [{ id: 'e2', text: 'Pay 2 Food to Excavate 2 Caverns', actionType: 'EXCAVATE', status: 'TODO', data: { count: 2, payBefore: { food: 2 } } }] }
+              { label: 'Excavate 1 Cavern', cost: {}, items: [{ id: 'e1', text: 'Excavate 1 Cavern', actionType: 'EXCAVATE', status: 'TODO', data: { count: 1, initialCount: 1 } }] },
+              { label: 'Pay 2 Food to Excavate 2 Caverns', cost: { food: 2 }, items: [{ id: 'e2', text: 'Pay 2 Food to Excavate 2 Caverns', actionType: 'EXCAVATE', status: 'TODO', data: { count: 2, initialCount: 2, payBefore: { food: 2 } } }] }
             ]
           }
         },
@@ -104,7 +104,7 @@ export function generateChecklistForAction(actionId: string, board: ActionBoardS
           data: {
             options: [
               { label: 'Activate 2 orange rooms', cost: {}, items: [{ id: 'um1', text: 'Activate 2 orange rooms', actionType: 'ROOM_ACTION', status: 'TODO', data: { count: 2 } }] },
-              { label: 'Excavate once, even through walls', cost: {}, items: [{ id: 'um2', text: 'Excavate once, even through walls', actionType: 'EXCAVATE', status: 'TODO', data: { count: 1, ignoreWalls: true } }] }
+              { label: 'Excavate once, even through walls', cost: {}, items: [{ id: 'um2', text: 'Excavate once, even through walls', actionType: 'EXCAVATE', status: 'TODO', data: { count: 1, initialCount: 1, ignoreWalls: true } }] }
             ]
           }
         }
@@ -113,12 +113,12 @@ export function generateChecklistForAction(actionId: string, board: ActionBoardS
     case 'drift_mining':
       items = [
         { id: 'dm1', text: 'Activate 1 orange room', actionType: 'ROOM_ACTION', optional: true, status: 'TODO', data: { count: 1 } },
-        { id: 'dm2', text: 'Excavate once', actionType: 'EXCAVATE', optional: true, status: 'TODO', data: { count: 1 } }
+        { id: 'dm2', text: 'Excavate once', actionType: 'EXCAVATE', optional: true, status: 'TODO', data: { count: 1, initialCount: 1 } }
       ];
       break;
     case 'expansion':
       items = [
-        { id: 'ex1', text: 'Excavate once', actionType: 'EXCAVATE', optional: true, status: 'TODO', data: { count: 1 } },
+        { id: 'ex1', text: 'Excavate once', actionType: 'EXCAVATE', optional: true, status: 'TODO', data: { count: 1, initialCount: 1 } },
         {
           id: 'ex_furnish_choice',
           text: 'Furnish Choice',
@@ -554,7 +554,7 @@ export function getRoomActionChecklistItems(roomId: string, cave: CaveSpace[]): 
       break;
     case 'digging_cave':
       items = [
-        { id: `dc_${ts}`, text: 'Pay 1 gold to excavate once', actionType: 'EXCAVATE', optional: true, status: 'TODO', data: { count: 1, payBefore: { gold: 1 } } }
+        { id: `dc_${ts}`, text: 'Pay 1 gold to excavate once', actionType: 'EXCAVATE', optional: true, status: 'TODO', data: { count: 1, initialCount: 1, payBefore: { gold: 1 } } }
       ];
       break;
     case 'bakehouse':

@@ -112,26 +112,21 @@ export const CaveBoard: React.FC<Props> = ({
                 onClick={() => isClickable && onSpaceClick(space.id)}
                 className={`w-full h-full rounded-lg flex flex-col items-center justify-center text-center p-0.5 border-2 transition-all relative
                   ${space.state === 'FACE_DOWN' && !isExcavatable ? 'bg-stone-600 border-stone-500 shadow-inner' : ''}
-                  ${space.state === 'FACE_DOWN' && isExcavatable ? 'bg-stone-500 border-orange-400 shadow-inner cursor-pointer hover:bg-stone-400 ring-4 ring-orange-400/50 animate-pulse' : ''}
+                  ${space.state === 'FACE_DOWN' && isExcavatable ? 'bg-stone-500 border-orange-400 shadow-inner cursor-pointer hover:bg-stone-400 ring-4 ring-orange-400/50 animate-game-pulse' : ''}
                   ${space.state === 'ENTRANCE' ? 'bg-orange-100 border-orange-400 justify-start' : ''}
                   ${space.state === 'FURNISHED' && space.tile?.color === 'orange' ? 'bg-orange-100 border-orange-400 justify-start' : ''}
                   ${space.state === 'FURNISHED' && space.tile?.color === 'blue' ? 'bg-blue-100 border-blue-400 justify-start' : ''}
                   ${space.state === 'CROSSED_PICKAXES' && !isFurnishable ? 'bg-stone-800 border-stone-900' : ''}
-                  ${space.state === 'CROSSED_PICKAXES' && isFurnishable ? 'bg-stone-800/80 border-dashed border-orange-400 cursor-pointer hover:bg-stone-700 ring-4 ring-orange-400/50 animate-pulse' : ''}
+                  ${space.state === 'CROSSED_PICKAXES' && isFurnishable ? 'bg-stone-800/80 border-dashed border-orange-400 cursor-pointer hover:bg-stone-700 ring-4 ring-orange-400/50 animate-game-pulse' : ''}
                   ${space.state === 'EMPTY' && !isFurnishable ? 'bg-stone-800/50 border-dashed border-stone-600' : ''}
-                  ${space.state === 'EMPTY' && isFurnishable ? 'bg-stone-800/80 border-dashed border-orange-400 cursor-pointer hover:bg-stone-700 ring-4 ring-orange-400/50 animate-pulse' : ''}
-                  ${isActionable ? 'ring-4 ring-green-400/50 cursor-pointer hover:scale-105 animate-pulse' : ''}
+                  ${space.state === 'EMPTY' && isFurnishable ? 'bg-stone-800/80 border-dashed border-orange-400 cursor-pointer hover:bg-stone-700 ring-4 ring-orange-400/50 animate-game-pulse' : ''}
+                  ${isActionable ? 'ring-4 ring-green-400/50 cursor-pointer hover:scale-105 animate-game-pulse' : ''}
                   ${isActivated ? 'opacity-60 grayscale-[0.5] border-stone-400' : ''}
                 `}
               >
                 {isActivated && (
                   <div className="absolute bottom-0 left-0 right-0 bg-stone-800/95 border-t border-stone-600 py-0.5 flex items-center justify-center pointer-events-none z-20 rounded-b-lg">
                     <span className="text-stone-400 text-[8px] font-bold uppercase tracking-[0.2em]">Activated</span>
-                  </div>
-                )}
-                {space.state === 'FACE_DOWN' && space.row === 3 && space.col === -1 && (
-                  <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
-                    <span className="text-stone-100 text-6xl font-black">X</span>
                   </div>
                 )}
                 {space.state === 'FACE_DOWN' && (
@@ -164,7 +159,7 @@ export const CaveBoard: React.FC<Props> = ({
                 
                 {space.state === 'CROSSED_PICKAXES' && (
                   <div className="relative flex items-center justify-center">
-                    {(space.row === 2 && space.col === 0) || (space.row === 3 && space.col === -1) ? (
+                    {(space.row === 2 && space.col === 0) ? (
                       <div className="relative flex items-center justify-center">
                         <Pickaxe className="w-10 h-10 text-stone-600 opacity-40" />
                         <div className="absolute inset-0 flex items-center justify-center">
@@ -231,8 +226,8 @@ export const CaveBoard: React.FC<Props> = ({
                   }}
                   className={`absolute -right-2 top-0 bottom-0 w-2 z-20 rounded-full transition-all
                     ${hasRightWall && !isRemovingWall ? 'bg-stone-950 shadow-md' : ''}
-                    ${hasRightWall && isRemovingWall ? 'bg-stone-950 shadow-md hover:bg-red-500 cursor-pointer animate-pulse' : ''}
-                    ${!hasRightWall && isBuildingWall ? 'bg-orange-400/30 hover:bg-orange-400/60 cursor-pointer animate-pulse' : ''}
+                    ${hasRightWall && isRemovingWall ? 'bg-stone-950 shadow-md hover:bg-red-500 cursor-pointer animate-game-pulse' : ''}
+                    ${!hasRightWall && isBuildingWall ? 'bg-orange-400/30 hover:bg-orange-400/60 cursor-pointer animate-game-pulse' : ''}
                     ${!hasRightWall && !isBuildingWall ? 'hidden' : ''}
                   `}
                 />
@@ -247,8 +242,8 @@ export const CaveBoard: React.FC<Props> = ({
                   }}
                   className={`absolute -bottom-2 left-0 right-0 h-2 z-20 rounded-full transition-all
                     ${hasBottomWall && !isRemovingWall ? 'bg-stone-950 shadow-md' : ''}
-                    ${hasBottomWall && isRemovingWall ? 'bg-stone-950 shadow-md hover:bg-red-500 cursor-pointer animate-pulse' : ''}
-                    ${!hasBottomWall && isBuildingWall ? 'bg-orange-400/30 hover:bg-orange-400/60 cursor-pointer animate-pulse' : ''}
+                    ${hasBottomWall && isRemovingWall ? 'bg-stone-950 shadow-md hover:bg-red-500 cursor-pointer animate-game-pulse' : ''}
+                    ${!hasBottomWall && isBuildingWall ? 'bg-orange-400/30 hover:bg-orange-400/60 cursor-pointer animate-game-pulse' : ''}
                     ${!hasBottomWall && !isBuildingWall ? 'hidden' : ''}
                   `}
                 />

@@ -136,17 +136,6 @@ export const CentralDisplay: React.FC<Props> = ({
 
   return (
     <div className="bg-stone-800 p-4 rounded-xl shadow-lg border border-stone-700 min-h-[32rem] relative flex flex-col">
-      <style>
-        {`
-          @keyframes checklist-flash {
-            0%, 100% { background-color: transparent; }
-            50% { background-color: rgba(234, 88, 12, 0.3); }
-          }
-          .animate-checklist-flash {
-            animation: checklist-flash 1.5s infinite;
-          }
-        `}
-      </style>
       {children}
       
       {/* Background Title */}
@@ -229,7 +218,7 @@ export const CentralDisplay: React.FC<Props> = ({
           const furnishable = isFurnishable(tile);
           const isActuallySelectable = isSelectable && furnishable;
           const shouldDarken = (highlightFurnishable || isSelectable) && !furnishable;
-          const shouldBlink = isActuallySelectable;
+          const shouldBlink = isActuallySelectable && !isSelected;
 
           return (
             <div 
@@ -239,7 +228,7 @@ export const CentralDisplay: React.FC<Props> = ({
               className={`w-32 h-32 rounded-lg p-0.5 border-2 flex flex-col items-center justify-start text-center relative shadow-md transition-all
                 ${tile.color === 'orange' ? 'bg-orange-100 border-orange-400' : 'bg-blue-100 border-blue-400'}
                 ${isActuallySelectable ? 'cursor-pointer hover:scale-105' : 'cursor-default'}
-                ${shouldBlink ? 'ring-4 ring-stone-200/40 animate-pulse' : ''}
+                ${shouldBlink ? 'ring-4 ring-stone-200/40 animate-game-pulse' : ''}
                 ${isSelected ? 'ring-8 ring-stone-100/30 border-stone-400 scale-110 z-10' : ''}
                 ${shouldDarken ? 'opacity-40 grayscale-[0.5] brightness-50' : ''}
               `}

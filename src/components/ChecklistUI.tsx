@@ -124,7 +124,7 @@ export const ChecklistUI: React.FC<Props> = ({
                   <div className="flex-shrink-0 flex items-center justify-center w-4">
                     {item.status === 'DONE' && <CheckSquare className="w-4 h-4 text-green-600" />}
                     {item.status === 'SKIPPED' && <X className="w-4 h-4 text-stone-400" />}
-                    {item.status === 'DOING' && <Play className="w-4 h-4 text-orange-600 animate-pulse" />}
+                    {item.status === 'DOING' && <Play className="w-4 h-4 text-orange-600 animate-game-pulse" />}
                     {item.status === 'TODO' && (
                       item.actionType === 'CHOICE' 
                         ? <Info className="w-4 h-4 text-orange-600" />
@@ -181,7 +181,7 @@ export const ChecklistUI: React.FC<Props> = ({
 
                 {item.status === 'DOING' && (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-orange-400 animate-pulse">In Progress...</span>
+                    <span className="text-xs font-bold text-orange-400 animate-game-pulse">In Progress...</span>
                     {item.optional && (
                       <button 
                         onClick={() => onSkip(item.id)}

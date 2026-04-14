@@ -11,7 +11,7 @@ import { ScoreSummary } from './components/ScoreSummary';
 import { auth, signInWithGoogle, logout } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { incrementVisits } from './services/statsService';
-import { LogIn, LogOut, User as UserIcon, Trophy, History, Clock } from 'lucide-react';
+import { LogIn, LogOut, User as UserIcon, Trophy, History, Clock, Pickaxe } from 'lucide-react';
 import { SettingsPanel, SettingsState } from './components/Settings';
 import { SelectGoodsModal } from './components/SelectGoodsModal';
 import { AdditionalCavernModal } from './components/AdditionalCavernModal';
@@ -21,7 +21,7 @@ import { userService } from './services/userService';
 import { scoreService } from './services/scoreService';
 import { generateChecklistForAction, getRoomActionChecklistItems } from './utils/checklist';
 import { isValidRoomPlacement } from './utils/walls';
-import { MAX_RESOURCE_LIMIT, MAX_GOLD_WEAPON_LIMIT } from './constants';
+import { MAX_RESOURCE_LIMIT, MAX_GOLD_WEAPON_LIMIT, MAX_WALLS_ERA_I, MAX_WALLS_ERA_II } from './constants';
 
 function canAfford(goods: GoodsState, cost?: Partial<GoodsState>, condition?: any): boolean {
   if (cost) {
@@ -95,6 +95,50 @@ function getAccessibleSpaces(cave: CaveSpace[], walls: string[], isUndermining: 
     }
   }
   return accessibleIds;
+}
+
+function canPlaceAnyVisibleTiles(state: GameState): boolean {
+  const availableSpaces = state.cave.filter(s => s.state === 'EMPTY' || s.state === 'CROSSED_PICKAXES');
+  if (availableSpaces.length === 0) return false;
+
+  const availableRooms = state.centralDisplay.filter((r): r is RoomTile => r !== null);
+  if (availableRooms.length === 0) return false;
+
+  for (const room of availableRooms) {
+    for (const space of availableSpaces) {
+      if (isValidRoomPlacement(space, state.walls, room.wallRequirement)) {
+        // Also check the orange vs blue room rule
+        if (room.color === 'blue') {
+          const orangeRooms = state.cave.filter(s => (s.state === 'FURNISHED' || s.state === 'ENTRANCE') && s.tile?.color === 'orange').length;
+          const blueRooms = state.cave.filter(s => s.state === 'FURNISHED' && s.tile?.color === 'blue').length;
+          if (blueRooms + 1 >= orangeRooms) continue;
+        }
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function shouldEndDrafting(state: GameState): boolean {
+  const availableSpaces = state.cave.filter(s => s.state === 'EMPTY' || s.state === 'CROSSED_PICKAXES');
+  // 1. If no empty spaces on the board, terminate.
+  if (availableSpaces.length === 0) return true;
+  
+  // 2. If VP >= 42, terminate.
+  if (state.uiState.draftingScore >= 42) return true;
+
+  // 3. If we can place visible tiles, don't terminate.
+  if (canPlaceAnyVisibleTiles(state)) return false;
+
+  // 4. If we can't place visible tiles, check if we can still do something:
+  // - FDP1 is not empty (can draw a new tile)
+  // - Or there're still unused walls (can build a wall to enable placement)
+  if (state.fdp1.length > 0 || state.uiState.draftingWallsLeft > 0) return false;
+
+  // Otherwise, terminate.
+  return true;
 }
 
 function addGoods(current: GameState['goods'], gains: Partial<GameState['goods']>): GameState['goods'] {
@@ -210,7 +254,8 @@ function initializeGame(): GameState {
     walls: initialWalls,
     actionBoard: initialActionBoard,
     centralDisplay: displayUnexcavatable, // The 3 remaining unexcavatable tiles
-    roomTileDeck: shuffledOther, // Remaining 8 in the deck
+    fdp1: shuffledOther, // Remaining 8 in the deck
+    fdp2: [],
     hasAdditionalCavern: false,
     uiState: {
       mode: 'IDLE',
@@ -784,8 +829,28 @@ export default function App() {
   };
 
   const startDrafting = () => {
+    // 1. Set all resources to 0
+    const zeroGoods: GoodsState = {
+      wood: 0, stone: 0, emmer: 0, flax: 0, food: 0, gold: 0, donkey: 0, ore: 0, iron: 0, weapons: 0
+    };
+
+    // 2. Initial setup of room tiles
     const eraIRooms = ROOM_TILES.filter(r => r.era === 1);
-    
+    const nonExcavatableEraI = eraIRooms.filter(r => !r.excavatable);
+    const excavatableEraI = eraIRooms.filter(r => r.excavatable);
+
+    // Remove 3 random non-excavatable room tiles from the game
+    const shuffledNonExcavatable = [...nonExcavatableEraI].sort(() => Math.random() - 0.5);
+    const startingRooms = shuffledNonExcavatable.slice(3); // The remaining 3
+
+    // The rest of Era I room tiles (excavatable ones) are shuffled into FDP1
+    const fdp1 = [...excavatableEraI].sort(() => Math.random() - 0.5);
+
+    // Draw a tile from FDP1 and place it in central display
+    const firstDrawn = fdp1.shift();
+    const centralDisplay = [...startingRooms];
+    if (firstDrawn) centralDisplay.push(firstDrawn);
+
     // Initial cave for drafting: all spaces are EMPTY (excavated) except entrance
     const initialCave: CaveSpace[] = [];
     for (let row = 0; row < 5; row++) {
@@ -815,22 +880,12 @@ export default function App() {
     setGameState(prev => ({
       ...prev,
       era: 1,
-      goods: {
-        ...prev.goods,
-        gold: 10,
-        food: 0,
-        wood: 0,
-        stone: 0,
-        emmer: 0,
-        flax: 0,
-        donkey: 0,
-        ore: 0,
-        iron: 0,
-        weapons: 0
-      },
+      goods: zeroGoods,
       cave: initialCave,
       walls: [],
-      centralDisplay: eraIRooms,
+      centralDisplay: centralDisplay,
+      fdp1: fdp1,
+      fdp2: [],
       uiState: {
         ...prev.uiState,
         mode: 'DRAFTING',
@@ -843,7 +898,20 @@ export default function App() {
 
   const transitionToEraII = () => {
     setGameState(prev => {
-      // Era II board (8 spaces) added to the left of Era I
+      let currentFdp1 = [...prev.fdp1];
+      
+      // 1. Cover remaining uncovered spaces in player's cave with tiles from FDP1
+      const eraICave = prev.cave.map(space => {
+        if (space.state === 'EMPTY' || space.state === 'CROSSED_PICKAXES') {
+          if (currentFdp1.length > 0) {
+            const tile = currentFdp1.shift();
+            return { ...space, state: 'FACE_DOWN' as const, tile };
+          }
+        }
+        return space;
+      });
+
+      // 2. Setup Era II board (8 spaces) added to the left of Era I
       const eraIICave: CaveSpace[] = [];
       const eraIITiles = ROOM_TILES.filter(r => r.era === 2 && r.excavatable);
       const shuffledEraIITiles = [...eraIITiles].sort(() => Math.random() - 0.5);
@@ -856,22 +924,26 @@ export default function App() {
         { row: 2, col: -2, state: 'FACE_DOWN' as const, openSides: ['top', 'bottom', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
         { row: 2, col: -1, state: 'FACE_DOWN' as const, openSides: ['top', 'bottom', 'left', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
         { row: 3, col: -2, state: 'FACE_DOWN' as const, openSides: ['top', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
-        { row: 3, col: -1, state: 'CROSSED_PICKAXES' as const, openSides: ['top', 'left', 'right', 'bottom'] as ("top" | "bottom" | "left" | "right")[], tile: undefined }
+        { row: 3, col: -1, state: 'FACE_DOWN' as const, openSides: ['top', 'left', 'right', 'bottom'] as ("top" | "bottom" | "left" | "right")[], tile: undefined }
       ];
 
-      for (const { row, col, state, openSides, tile: coordTile } of eraIICoords) {
+      // Place 8 tiles on Era II board
+      for (const { row, col, state, openSides } of eraIICoords) {
         eraIICave.push({
           id: `space-${row}-${col}`,
           row,
           col,
           state,
           openSides,
-          tile: state === 'FACE_DOWN' ? shuffledEraIITiles.pop() : coordTile
+          tile: shuffledEraIITiles.shift()
         });
       }
 
+      // Remaining 7 excavatable Era II rooms form FDP2
+      const fdp2 = shuffledEraIITiles;
+
       // Update Era I spaces that connect to Era II
-      const updatedCave = prev.cave.map(space => {
+      const updatedCave = eraICave.map(space => {
         if (space.row === 0 && space.col === 0) return { ...space, openSides: ['bottom', 'right', 'left'] as ("top" | "bottom" | "left" | "right")[] };
         if (space.row === 1 && space.col === 0) return { ...space, openSides: ['top', 'bottom', 'right', 'left'] as ("top" | "bottom" | "left" | "right")[] };
         if (space.row === 2 && space.col === 0) return { ...space, openSides: ['top', 'bottom', 'right', 'left'] as ("top" | "bottom" | "left" | "right")[] };
@@ -894,8 +966,16 @@ export default function App() {
         if (!newWalls.includes(w)) newWalls.push(w);
       });
 
-      // Update central display with Era II non-excavatable rooms
+      // 3. Set all resources to 1
+      const eraIIGoods: GoodsState = {
+        wood: 1, stone: 1, emmer: 1, flax: 1, food: 1, gold: 1, donkey: 1, ore: 1, iron: 1, weapons: 1
+      };
+
+      // 4. Update central display with Era II non-excavatable rooms
+      // For solo mode, remove 3 (out of 6) random non-excavatable Era II room tiles
       const eraIINonExcavatable = ROOM_TILES.filter(r => r.era === 2 && !r.excavatable);
+      const shuffledNonExcavatable = [...eraIINonExcavatable].sort(() => Math.random() - 0.5);
+      const displayRooms = shuffledNonExcavatable.slice(3);
       
       // Action Board update
       const shuffledEraII = [...ERA_II_ACTIONS].sort(() => Math.random() - 0.5);
@@ -919,12 +999,18 @@ export default function App() {
         era: 2,
         cave: combinedCave,
         walls: newWalls,
-        centralDisplay: [...prev.centralDisplay.filter(Boolean), ...eraIINonExcavatable],
         actionBoard: nextActionBoard,
+        centralDisplay: [...prev.centralDisplay, ...displayRooms],
+        fdp1: currentFdp1,
+        fdp2: fdp2,
+        goods: eraIIGoods,
         uiState: {
           ...prev.uiState,
           mode: 'IDLE',
-          showScoreSummary: false
+          draftingScore: 0,
+          draftingWallsLeft: 0,
+          showScoreSummary: false,
+          wallsLeft: 0 // Reset walls left from any previous action
         }
       };
     });
@@ -1074,9 +1160,37 @@ export default function App() {
     });
   };
 
+  const handleDraftingDraw = () => {
+    setGameState(prev => {
+      if (prev.fdp1.length === 0) return prev;
+      const next = { ...prev, fdp1: [...prev.fdp1], centralDisplay: [...prev.centralDisplay] };
+      const drawnTile = next.fdp1.shift();
+      if (drawnTile) {
+        next.centralDisplay.push(drawnTile);
+      }
+      
+      // After drawing, check if we are still stuck
+      if (shouldEndDrafting(next)) {
+        showNotification("Drafting complete! You can no longer place tiles.", 'success');
+        next.uiState.mode = 'DRAFTING_COMPLETE';
+      }
+
+      return next;
+    });
+  };
+
   const handleSpaceClick = (spaceId: string) => {
     setGameState(prev => {
-      const nextState = { ...prev, conversionHistory: [], uiState: { ...prev.uiState, hasInteractedWithChecklist: true }, cave: [...prev.cave], centralDisplay: [...prev.centralDisplay], goods: { ...prev.goods } };
+      const nextState = { 
+        ...prev, 
+        conversionHistory: [], 
+        uiState: { ...prev.uiState, hasInteractedWithChecklist: true }, 
+        cave: [...prev.cave], 
+        centralDisplay: [...prev.centralDisplay], 
+        goods: { ...prev.goods },
+        fdp1: [...prev.fdp1],
+        fdp2: [...prev.fdp2]
+      };
       nextState.uiState.checklist = [...prev.uiState.checklist];
 
       if (prev.uiState.mode === 'EXCAVATE') {
@@ -1096,16 +1210,27 @@ export default function App() {
         }
 
         // Draw a new room tile from the deck and add to central display
-        if (nextState.roomTileDeck.length > 0) {
-          const drawnTile = nextState.roomTileDeck.shift();
-          if (drawnTile) {
-            nextState.centralDisplay.push(drawnTile);
+        // If player excavate exactly one tile, a tile from FDP1/FDP2 is also drawn
+        const itemIndex = nextState.uiState.checklist.findIndex(i => i.status === 'DOING' && i.actionType === 'EXCAVATE');
+        if (itemIndex !== -1) {
+          const item = nextState.uiState.checklist[itemIndex];
+          if (item.data.initialCount === 1) {
+            const isEraI = space.col >= 0;
+            const deck = isEraI ? nextState.fdp1 : nextState.fdp2;
+            
+            if (deck.length > 0) {
+              const drawnTile = deck.shift();
+              if (drawnTile) {
+                nextState.centralDisplay.push(drawnTile);
+              }
+              if (isEraI) nextState.fdp1 = [...deck];
+              else nextState.fdp2 = [...deck];
+            }
           }
         }
 
         nextState.uiState.excavationsLeft -= 1;
         
-        const itemIndex = nextState.uiState.checklist.findIndex(i => i.status === 'DOING' && i.actionType === 'EXCAVATE');
         if (itemIndex !== -1) {
           const doingItem = { ...nextState.uiState.checklist[itemIndex] };
           if (doingItem.data) {
@@ -1153,9 +1278,23 @@ export default function App() {
         nextState.cave[spaceIndex] = { ...space, state: 'FURNISHED', tile: roomToPlace };
         nextState.centralDisplay.splice(roomIndex, 1);
         
+        // Draw a new tile from FDP1
+        if (nextState.fdp1.length > 0) {
+          const drawnTile = nextState.fdp1.shift();
+          if (drawnTile) {
+            nextState.centralDisplay.push(drawnTile);
+          }
+        }
+
         nextState.uiState.mode = 'DRAFTING';
         nextState.uiState.draftingScore += roomToPlace.vp;
         nextState.uiState.selectedRoomId = undefined;
+
+        // Check if drafting should end
+        if (shouldEndDrafting(nextState)) {
+          showNotification("Drafting complete! You can no longer place tiles.", 'success');
+          nextState.uiState.mode = 'DRAFTING_COMPLETE';
+        }
 
         return nextState;
       }
@@ -1318,20 +1457,28 @@ export default function App() {
           }
         }
         
-        if (nextState.walls.length >= 7) {
-          showNotification("Maximum of 7 walls reached! You cannot build any more walls.", 'error');
+        const maxWalls = nextState.era === 1 ? MAX_WALLS_ERA_I : MAX_WALLS_ERA_II;
+        
+        if (nextState.walls.length >= maxWalls) {
+          showNotification(`Maximum of ${maxWalls} walls reached! You cannot build any more walls.`, 'error');
           return prev;
         }
 
         nextState.walls = [...nextState.walls, wallId];
         
-        if (nextState.walls.length === 7) {
-          showNotification("You have built your 7th and final wall!", 'success');
+        if (nextState.walls.length === maxWalls) {
+          showNotification(`You have built your ${maxWalls === 7 ? '7th' : '10th'} and final wall!`, 'success');
         }
 
         if (isDraftingMode) {
           nextState.uiState.draftingWallsLeft -= 1;
-          // Stay in current mode (DRAFTING or DRAFTING_PLACE_ROOM)
+          
+          // Check if drafting should end (building a wall might enable/disable placements)
+          if (nextState.uiState.mode === 'DRAFTING' && shouldEndDrafting(nextState)) {
+            showNotification("Drafting complete! You can no longer place tiles.", 'success');
+            nextState.uiState.mode = 'DRAFTING_COMPLETE';
+          }
+          
           return nextState;
         }
 
@@ -1487,7 +1634,7 @@ export default function App() {
     ? gameState.centralDisplay.find(r => r?.id === gameState.uiState.selectedRoomId) 
     : undefined;
 
-  const isDraftingMode = gameState.uiState.mode === 'DRAFTING' || gameState.uiState.mode === 'DRAFTING_PLACE_ROOM';
+  const isDraftingMode = gameState.uiState.mode === 'DRAFTING' || gameState.uiState.mode === 'DRAFTING_PLACE_ROOM' || gameState.uiState.mode === 'DRAFTING_COMPLETE';
 
   return (
     <div className="min-h-screen bg-stone-900 text-stone-100 p-4 md:p-8 font-sans flex flex-col">
@@ -1548,7 +1695,7 @@ export default function App() {
           </div>
           <div className="flex items-center gap-4">
             {isSaving && (
-              <div className="flex items-center gap-2 text-stone-500 text-[10px] uppercase font-bold tracking-widest animate-pulse">
+              <div className="flex items-center gap-2 text-stone-500 text-[10px] uppercase font-bold tracking-widest animate-game-pulse">
                 <div className="w-1.5 h-1.5 bg-stone-500 rounded-full"></div>
                 Saving...
               </div>
@@ -1641,6 +1788,15 @@ export default function App() {
                     <span className="text-white text-lg font-bold">Draft Era I rooms to reach 42 VP</span>
                   </div>
                   <div className="flex items-center gap-6">
+                    {isDraftingMode && gameState.uiState.mode !== 'DRAFTING_COMPLETE' && !canPlaceAnyVisibleTiles(gameState) && gameState.uiState.draftingWallsLeft === 0 && gameState.fdp1.length > 0 && (
+                      <button
+                        onClick={handleDraftingDraw}
+                        className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition-all flex items-center gap-2"
+                      >
+                        <Pickaxe className="w-4 h-4" />
+                        Stuck? Draw New Tile
+                      </button>
+                    )}
                     <div className="flex flex-col items-center">
                       <span className="text-stone-400 text-[10px] uppercase">Walls Left</span>
                       <span className="text-orange-400 text-2xl font-black">{gameState.uiState.draftingWallsLeft}</span>
@@ -1649,7 +1805,7 @@ export default function App() {
                       <span className="text-stone-400 text-[10px] uppercase">Current VP</span>
                       <span className="text-orange-400 text-2xl font-black">{gameState.uiState.draftingScore} / 42</span>
                     </div>
-                    {gameState.uiState.draftingScore >= 42 && (
+                    {(gameState.uiState.mode === 'DRAFTING_COMPLETE' || gameState.uiState.draftingScore >= 42) && (
                       <button
                         onClick={transitionToEraII}
                         className="bg-orange-500 hover:bg-orange-400 text-white px-6 py-2 rounded-lg font-bold shadow-lg transition-all animate-bounce"

@@ -5,6 +5,21 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --animate-game-pulse: game-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-checklist-flash: checklist-flash 2s infinite;
+
+  @keyframes game-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  @keyframes checklist-flash {
+    0%, 100% { background-color: transparent; }
+    50% { background-color: rgba(234, 88, 12, 0.3); }
+  }
+}
+
 @layer utilities {
   .custom-scrollbar {
     scrollbar-width: thin;

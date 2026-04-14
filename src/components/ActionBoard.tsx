@@ -50,7 +50,7 @@ export const ActionBoard: React.FC<Props> = ({
           )}
         </div>
         {isUsed && <span className="absolute bottom-1 bg-stone-800/80 px-2 py-0.5 rounded text-white text-[10px] font-bold uppercase tracking-wider">Used</span>}
-        {isActive && <span className="absolute bottom-1 bg-orange-600 px-2 py-0.5 rounded text-white text-[10px] font-bold uppercase tracking-wider animate-pulse">Active</span>}
+        {isActive && <span className="absolute bottom-1 bg-orange-600 px-2 py-0.5 rounded text-white text-[10px] font-bold uppercase tracking-wider animate-game-pulse">Active</span>}
       </button>
       
       {additionalAction && (
