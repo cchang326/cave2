@@ -127,7 +127,7 @@ export const SettingsPanel: React.FC<Props> = ({ settingsState, setSettingsState
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 bg-stone-800 p-3 rounded-full border border-stone-600 shadow-lg hover:bg-stone-700 transition-colors z-50 group"
+        className="fixed bottom-6 right-6 bg-stone-800 p-3 rounded-full border border-stone-600 shadow-lg hover:bg-stone-700 transition-colors z-[400] group"
         title="Open Settings"
       >
         <Settings className="w-6 h-6 text-stone-400 group-hover:text-stone-200 transition-colors" />
@@ -136,7 +136,7 @@ export const SettingsPanel: React.FC<Props> = ({ settingsState, setSettingsState
   }
 
   return (
-    <div className="fixed bottom-6 right-6 w-80 bg-stone-800 rounded-xl shadow-2xl border border-stone-600 z-50 overflow-hidden flex flex-col">
+    <div className="fixed bottom-6 right-6 w-80 bg-stone-800 rounded-xl shadow-2xl border border-stone-600 z-[400] overflow-hidden flex flex-col">
       <div className="flex justify-between items-center p-4 border-b border-stone-700 bg-stone-900/80">
         <h3 className="font-bold text-stone-200 flex items-center gap-2">
           <Settings className="w-4 h-4 text-orange-500" /> Settings

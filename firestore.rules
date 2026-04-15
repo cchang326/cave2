@@ -73,17 +73,19 @@ service cloud.firestore {
              data.updatedAt is timestamp &&
              data.isGameOver is bool &&
              data.metadata is map &&
-             data.metadata.keys().hasAll(['round', 'turn', 'score']) &&
+             data.metadata.keys().hasAll(['round', 'turn', 'score', 'gameType']) &&
              data.metadata.round is int &&
              data.metadata.turn is int &&
-             data.metadata.score is number;
+             data.metadata.score is number &&
+             data.metadata.gameType is string;
     }
 
     function isValidGameLog(data) {
-      return data.keys().hasAll(['userId', 'gameId', 'score', 'gameState', 'timestamp', 'cheatsUsed']) &&
+      return data.keys().hasAll(['userId', 'gameId', 'score', 'gameType', 'gameState', 'timestamp', 'cheatsUsed']) &&
              data.userId is string &&
              data.gameId is string &&
              data.score is number &&
+             data.gameType is string &&
              data.gameState is map &&
              data.timestamp is timestamp &&
              data.cheatsUsed is bool;

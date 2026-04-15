@@ -23,6 +23,7 @@ export interface HighScoreEntry {
   timestamp: any;
   cheatsUsed: boolean;
   gameState: GameState;
+  gameType: string;
 }
 
 export const scoreService = {
@@ -32,6 +33,7 @@ export const scoreService = {
 
     const scoreDetails = calculateScore(state);
     const score = scoreDetails.totalVP;
+    const gameType = state.uiState.gameType || 'ERA_I';
     
     // Ensure we have a valid gameId
     let gameId = state.gameId;
@@ -48,11 +50,12 @@ export const scoreService = {
       const sameGameSnapshot = await getDocs(qSameGame);
       const isNewGameId = sameGameSnapshot.empty;
 
-      console.log(`Saving score for game ${gameId}: ${score} (New: ${isNewGameId})`);
+      console.log(`Saving score for game ${gameId} (${gameType}): ${score} (New: ${isNewGameId})`);
       await setDoc(logRef, {
         userId: user.uid,
         gameId: gameId,
         score: score,
+        gameType: gameType,
         gameState: JSON.parse(JSON.stringify(state)),
         timestamp: serverTimestamp(),
         cheatsUsed: state.cheatsUsed
@@ -63,17 +66,18 @@ export const scoreService = {
         await incrementGamesFinished();
       }
 
-      // Global Pruning: Ensure the player only has 20 total high score entries across all games
-      const qAll = query(
+      // Pruning: Ensure the player only has top 10 high score entries for THIS game type
+      const qType = query(
         collection(db, 'game_logs'),
         where('userId', '==', user.uid),
+        where('gameType', '==', gameType),
         orderBy('score', 'desc')
       );
       
-      const allSnapshot = await getDocs(qAll);
-      if (allSnapshot.docs.length > 20) {
-        const toDelete = allSnapshot.docs.slice(20);
-        console.log(`Pruning ${toDelete.length} scores to maintain top 20 limit`);
+      const typeSnapshot = await getDocs(qType);
+      if (typeSnapshot.docs.length > 10) {
+        const toDelete = typeSnapshot.docs.slice(10);
+        console.log(`Pruning ${toDelete.length} scores for ${gameType} to maintain top 10 limit`);
         for (const entry of toDelete) {
           await deleteDoc(doc(db, 'game_logs', entry.id));
         }

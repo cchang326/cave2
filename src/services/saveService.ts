@@ -41,7 +41,8 @@ export const saveService = {
         metadata: {
           round: state.actionBoard.round,
           turn: state.actionBoard.turn,
-          score
+          score,
+          gameType: state.uiState.gameType || 'ERA_I'
         }
       });
     } catch (error) {

@@ -79,8 +79,11 @@ export interface ChecklistItem {
   data?: any;
 }
 
+export type GameType = 'ERA_I' | 'ERA_II' | 'ERA_II_DRAFT';
+
 export interface UIState {
   mode: 'IDLE' | 'EXCAVATE' | 'FURNISH_SELECT_ROOM' | 'FURNISH_SELECT_SPACE' | 'ROOM_ACTION' | 'BUILD_WALL' | 'REMOVE_WALL' | 'PAY_DYNAMIC' | 'RESOLVING_TURN' | 'GAME_OVER' | 'LEADERBOARD' | 'DRAFTING' | 'DRAFTING_PLACE_ROOM' | 'DRAFTING_COMPLETE';
+  gameType: GameType;
   excavationsLeft: number;
   furnishingsLeft: number;
   roomActionsLeft: number;

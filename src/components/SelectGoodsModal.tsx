@@ -42,7 +42,7 @@ export const SelectGoodsModal: React.FC<Props> = ({ goods, amount, mustBeDiffere
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[500] p-4">
       <div className="bg-stone-800 p-6 rounded-xl shadow-2xl border border-stone-600 max-w-md w-full">
         <h2 className="text-xl font-bold text-orange-400 mb-4">Select Goods to Pay</h2>
         <p className="text-stone-300 mb-6">

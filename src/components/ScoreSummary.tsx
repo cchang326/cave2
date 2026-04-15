@@ -11,6 +11,7 @@ interface Props {
   gameState: GameState;
   onPlayAgain: () => void;
   onClose: () => void;
+  onContinueToEraII?: () => void;
   viewOnly?: boolean;
   userRole?: string | null;
 }
@@ -22,9 +23,10 @@ interface GameHistoryEntry {
   score: number;
   timestamp: any;
   cheatsUsed: boolean;
+  gameType: string;
 }
 
-export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose, viewOnly = false, userRole }) => {
+export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose, onContinueToEraII, viewOnly = false, userRole }) => {
   const { 
     totalVP, 
     era1Score, era1RoomVP, era1GoldVP,
@@ -34,6 +36,9 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
   const [showCheats, setShowCheats] = useState(true);
+  const [activeTab, setActiveTab] = useState<string>(
+    gameState.uiState.gameType === 'ERA_II_DRAFT' ? 'ERA_II' : (gameState.uiState.gameType || 'ERA_I')
+  );
 
   const isAdmin = userRole === 'admin';
 
@@ -49,16 +54,18 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
       return;
     }
 
+    setIsLoadingHistory(true);
     let currentUnsub: (() => void) | undefined;
 
     const setupListener = () => {
-      // We want to show the top scores. 
-      // Note: This query requires a composite index on userId and score.
+      // Filter by activeTab
+      const gameTypes = activeTab === 'ERA_II' ? ['ERA_II', 'ERA_II_DRAFT'] : [activeTab];
       const q = query(
         collection(db, 'game_logs'), 
         where('userId', '==', auth.currentUser!.uid),
+        where('gameType', 'in', gameTypes),
         orderBy('score', 'desc'),
-        limit(20)
+        limit(10)
       );
       
       currentUnsub = onSnapshot(q, (snapshot) => {
@@ -74,7 +81,7 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
           return timeB - timeA;
         });
         
-        setHistory(sortedEntries.slice(0, 10));
+        setHistory(sortedEntries);
         setIsLoadingHistory(false);
       }, (error) => {
         console.error("History error:", error);
@@ -84,10 +91,12 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
         if (error.code === 'failed-precondition' || error.message?.includes('index')) {
           if (currentUnsub) currentUnsub();
           
+          const gameTypes = activeTab === 'ERA_II' ? ['ERA_II', 'ERA_II_DRAFT'] : [activeTab];
           const fallbackQ = query(
             collection(db, 'game_logs'),
             where('userId', '==', auth.currentUser!.uid),
-            limit(500)
+            where('gameType', 'in', gameTypes),
+            limit(100)
           );
           
           currentUnsub = onSnapshot(fallbackQ, (snapshot) => {
@@ -120,7 +129,7 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
     return () => {
       if (currentUnsub) currentUnsub();
     };
-  }, [auth.currentUser]);
+  }, [auth.currentUser, activeTab]);
 
   const formatDate = (timestamp: any) => {
     if (!timestamp) return 'Just now';
@@ -141,7 +150,7 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[300] p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[500] p-4 overflow-y-auto">
       <div className="bg-stone-800 border-2 border-orange-500/50 rounded-2xl p-8 max-w-4xl w-full shadow-2xl my-8 flex flex-col md:flex-row gap-8">
         <div className="flex-1">
           <div className="flex flex-col items-center mb-8">
@@ -234,10 +243,19 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
           </div>
 
           <div className="flex flex-col gap-3">
+            {gameState.uiState.mode === 'GAME_OVER' && gameState.era === 1 && onContinueToEraII && (
+              <button
+                onClick={onContinueToEraII}
+                className="w-full py-4 bg-stone-700 hover:bg-stone-600 text-white font-bold rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2 border border-purple-500/20"
+              >
+                <Zap className="w-5 h-5" />
+                Continue to Era II
+              </button>
+            )}
             {gameState.uiState.mode === 'GAME_OVER' && (
               <button
                 onClick={onPlayAgain}
-                className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-xl transition-colors shadow-lg"
+                className="w-full py-4 bg-stone-700 hover:bg-stone-600 text-white font-bold rounded-xl transition-colors shadow-lg border border-orange-500/20"
               >
                 Play Again
               </button>
@@ -256,7 +274,7 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
         </div>
 
         <div className="flex-1 border-l border-stone-700 pl-0 md:pl-8 pt-8 md:pt-0">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Trophy className="w-6 h-6 text-orange-400" />
               <h3 className="text-xl font-bold text-stone-100">High Scores</h3>
@@ -270,6 +288,25 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
                 Show Cheats
               </button>
             )}
+          </div>
+
+          <div className="flex gap-1 mb-4 bg-stone-900/80 p-1 rounded-lg border border-stone-700">
+            {[
+              { id: 'ERA_I', label: 'Era I' },
+              { id: 'ERA_II', label: 'Era II' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-stone-700 text-orange-400 shadow-sm'
+                    : 'text-stone-500 hover:text-stone-300'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
           {!auth.currentUser ? (
@@ -315,8 +352,15 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
                               <span className="text-stone-400 text-[10px]">
                                 {formatDate(entry.timestamp)}
                               </span>
+                              {entry.gameType === 'ERA_II_DRAFT' && (
+                                <span className="text-[8px] font-bold text-purple-400 uppercase tracking-wider bg-purple-400/10 px-1.5 py-0.5 rounded">
+                                  Draft
+                                </span>
+                              )}
                               {entry.cheatsUsed && (
-                                <Zap className="w-2.5 h-2.5 text-yellow-500 fill-yellow-500" />
+                                <span className="text-[8px] font-bold text-yellow-500 uppercase tracking-wider bg-yellow-500/10 px-1.5 py-0.5 rounded">
+                                  Cheats
+                                </span>
                               )}
                             </div>
                             <span className={`font-medium ${isCurrentGame ? 'text-orange-200' : 'text-stone-200'}`}>

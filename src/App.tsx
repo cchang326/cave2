@@ -316,6 +316,7 @@ function initializeGame(): GameState {
     hasAdditionalCavern: false,
     uiState: {
       mode: 'IDLE',
+      gameType: 'ERA_I',
       excavationsLeft: 0,
       furnishingsLeft: 0,
       roomActionsLeft: 0,
@@ -833,7 +834,9 @@ export default function App() {
       };
 
       nextState.uiState = {
+        ...prev.uiState,
         mode: nextMode,
+        gameType: prev.uiState.gameType,
         excavationsLeft: 0,
         furnishingsLeft: 0,
         roomActionsLeft: 0,
@@ -958,6 +961,7 @@ export default function App() {
       uiState: {
         ...prev.uiState,
         mode: 'DRAFTING',
+        gameType: 'ERA_II_DRAFT',
         draftingScore: 0,
         draftingWallsLeft: 3,
         showScoreSummary: false
@@ -1077,6 +1081,15 @@ export default function App() {
         era1Score,
         era1RoomVP,
         era1GoldVP,
+        uiState: {
+          ...prev.uiState,
+          gameType: prev.uiState.gameType === 'ERA_II_DRAFT' ? 'ERA_II_DRAFT' : 'ERA_II',
+          mode: 'IDLE',
+          draftingScore: 0,
+          draftingWallsLeft: 0,
+          showScoreSummary: false,
+          wallsLeft: 0 // Reset walls left from any previous action
+        },
         cave: combinedCave,
         walls: newWalls,
         actionBoard: nextActionBoard,
@@ -1084,14 +1097,6 @@ export default function App() {
         fdp1: currentFdp1,
         fdp2: fdp2,
         goods: eraIIGoods,
-        uiState: {
-          ...prev.uiState,
-          mode: 'IDLE',
-          draftingScore: 0,
-          draftingWallsLeft: 0,
-          showScoreSummary: false,
-          wallsLeft: 0 // Reset walls left from any previous action
-        }
       };
     });
   };
@@ -1103,9 +1108,22 @@ export default function App() {
 
   const handleLoadSave = (slotId: string, save?: GameSave) => {
     if (save) {
-      setGameState(save.state);
+      const loadedState = { ...save.state };
+      // Migration for old saves missing gameType
+      if (!loadedState.uiState.gameType) {
+        const isDraft = loadedState.uiState.mode?.startsWith('DRAFTING') || 
+                        (loadedState.uiState.draftingWallsLeft !== undefined && loadedState.uiState.draftingWallsLeft > 0) ||
+                        (loadedState.uiState.draftingScore !== undefined && loadedState.uiState.draftingScore > 0);
+        
+        if (isDraft) {
+          loadedState.uiState.gameType = 'ERA_II_DRAFT';
+        } else {
+          loadedState.uiState.gameType = loadedState.era === 2 ? 'ERA_II' : 'ERA_I';
+        }
+      }
+      setGameState(loadedState);
       if (save.isGameOver) {
-        scoreService.saveHighScore(save.state);
+        scoreService.saveHighScore(loadedState);
       }
     } else {
       // Empty slot selected: Always start a new game in this slot
@@ -1725,6 +1743,7 @@ export default function App() {
             gameState={gameState} 
             onPlayAgain={startNewGame} 
             onClose={() => setGameState(prev => ({ ...prev, uiState: { ...prev.uiState, showScoreSummary: false } }))}
+            onContinueToEraII={transitionToEraII}
             userRole={userRole}
           />
         )}
@@ -1785,17 +1804,8 @@ export default function App() {
               onClick={() => setShowRestartConfirm(true)}
               className="text-sm bg-stone-800 hover:bg-stone-700 px-4 py-2 rounded border border-stone-600 transition-colors"
             >
-              Restart Game
+              New Game
             </button>
-
-            {gameState.actionBoard.round === 1 && gameState.actionBoard.turn === 1 && gameState.actionBoard.usedActionsThisRound.length === 0 && (
-              <button 
-                onClick={startDrafting}
-                className="text-sm bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded border border-orange-400 transition-colors font-bold shadow-lg"
-              >
-                Drafting Mode (Era II)
-              </button>
-            )}
 
             {user && (
               <button 
@@ -2007,24 +2017,36 @@ export default function App() {
         </div>
       )}
       {showRestartConfirm && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60] p-4">
-          <div className="bg-stone-800 border-2 border-orange-500/50 rounded-2xl p-8 max-w-md w-full shadow-2xl">
-            <h3 className="text-2xl font-bold text-stone-100 mb-4">Restart Game?</h3>
-            <p className="text-stone-400 mb-8">
-              Are you sure you want to restart? All current progress will be lost and your save slot will be reset.
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[500] p-4">
+          <div className="bg-stone-800 border-2 border-stone-600 rounded-2xl p-8 max-w-md w-full shadow-2xl">
+            <h3 className="text-2xl font-bold text-stone-100 mb-4 text-center">Start New Game?</h3>
+            <p className="text-stone-400 mb-8 text-center text-sm">
+              Current progress will be lost. Choose your starting era:
             </p>
-            <div className="flex gap-4">
-              <button
-                onClick={() => setShowRestartConfirm(false)}
-                className="flex-1 py-3 bg-stone-700 hover:bg-stone-600 text-stone-200 font-bold rounded-xl transition-colors"
-              >
-                Cancel
-              </button>
+            <div className="flex flex-col gap-4">
               <button
                 onClick={handleRestartGame}
-                className="flex-1 py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-xl transition-colors shadow-lg"
+                className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-xl transition-colors shadow-lg flex flex-col items-center border border-orange-400/30"
               >
-                Restart
+                <span>Start from Era I</span>
+                <span className="text-[10px] opacity-80 font-normal text-orange-100">The Stone Age (Standard)</span>
+              </button>
+              <button
+                onClick={() => {
+                  startDrafting();
+                  setShowRestartConfirm(false);
+                }}
+                className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors shadow-lg flex flex-col items-center border border-blue-400/30"
+              >
+                <span>Draft for Era II</span>
+                <span className="text-[10px] opacity-80 font-normal text-blue-100">The Iron Age (Advanced)</span>
+              </button>
+              <div className="h-px bg-stone-700 my-2" />
+              <button
+                onClick={() => setShowRestartConfirm(false)}
+                className="w-full py-3 bg-stone-700 hover:bg-stone-600 text-stone-200 font-bold rounded-xl transition-colors"
+              >
+                Cancel
               </button>
             </div>
           </div>

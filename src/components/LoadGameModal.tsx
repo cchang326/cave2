@@ -55,7 +55,7 @@ export const LoadGameModal: React.FC<Props> = ({ currentSlotId, onLoad, onClose 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[500] p-4">
       <div className="bg-stone-800 border-4 border-stone-600 rounded-2xl p-8 max-w-2xl w-full shadow-2xl transform animate-in fade-in zoom-in duration-300 relative">
         <button 
           onClick={onClose}
