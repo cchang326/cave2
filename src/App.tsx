@@ -19,9 +19,62 @@ import { LoadGameModal } from './components/LoadGameModal';
 import { saveService, GameSave } from './services/saveService';
 import { userService } from './services/userService';
 import { scoreService } from './services/scoreService';
+import { calculateScore } from './utils/scoring';
 import { generateChecklistForAction, getRoomActionChecklistItems } from './utils/checklist';
 import { isValidRoomPlacement } from './utils/walls';
 import { MAX_RESOURCE_LIMIT, MAX_GOLD_WEAPON_LIMIT, MAX_WALLS_ERA_I, MAX_WALLS_ERA_II } from './constants';
+
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("Uncaught error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-stone-900 flex items-center justify-center p-4">
+          <div className="bg-stone-800 border-2 border-red-500 rounded-2xl p-8 max-w-md w-full shadow-2xl text-center">
+            <h2 className="text-2xl font-bold text-red-400 mb-4">Something went wrong</h2>
+            <p className="text-stone-300 mb-6 text-sm">
+              The application encountered an unexpected error. You can try refreshing the page or restarting the game.
+            </p>
+            <div className="bg-stone-900/50 p-4 rounded-lg mb-6 text-left overflow-auto max-h-40">
+              <code className="text-xs text-red-300/70 break-all">
+                {this.state.error?.message || "Unknown error"}
+              </code>
+            </div>
+            <button 
+              onClick={() => window.location.reload()}
+              className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-colors"
+            >
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 function canAfford(goods: GoodsState, cost?: Partial<GoodsState>, condition?: any): boolean {
   if (cost) {
@@ -165,6 +218,10 @@ function subtractGoods(current: GameState['goods'], costs: Partial<GameState['go
   return next;
 }
 
+function generateGameId(): string {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
 function initializeGame(): GameState {
   // 3 out of the 6 unexcavatable rooms (tile 1-6) are randomly selected and removed from the game.
   // The remaining 3 are placed in the central display during initial setup.
@@ -274,9 +331,12 @@ function initializeGame(): GameState {
       draftingScore: 0
     },
     conversionHistory: [],
-    gameId: '',
+    gameId: generateGameId(),
     cheatsUsed: false,
-    era: 1
+    era: 1,
+    era1Score: 0,
+    era1RoomVP: 0,
+    era1GoldVP: 0
   };
 }
 
@@ -342,16 +402,6 @@ export default function App() {
       });
     }
   }, [settingsState.fixTileLocations]);
-
-  useEffect(() => {
-    // Generate gameId if it's a new game (Round 1, Turn 1) and ID is empty
-    if (gameState.actionBoard.round === 1 && gameState.actionBoard.turn === 1 && !gameState.gameId) {
-      setGameState(prev => ({
-        ...prev,
-        gameId: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-      }));
-    }
-  }, [gameState.actionBoard.round, gameState.actionBoard.turn, gameState.gameId]);
 
   useEffect(() => {
     incrementVisits();
@@ -573,6 +623,12 @@ export default function App() {
           next.goods = addGoods(next.goods, item.data.goods);
         }
         updatedItem.status = 'DONE';
+      } else if (item.actionType === 'GAIN_CALCULATED') {
+        if (item.data.calculation === 'gold_per_2_donkeys') {
+          const goldToGain = Math.floor((next.goods.donkey || 0) / 2);
+          next.goods = addGoods(next.goods, { gold: goldToGain });
+        }
+        updatedItem.status = 'DONE';
       } else if (item.actionType === 'PAY') {
         const hasEnough = Object.entries(item.data.goods).every(([key, value]) => {
           return (next.goods[key as keyof typeof next.goods] || 0) >= (value as number);
@@ -789,35 +845,47 @@ export default function App() {
         activatedRoomsThisTurn: [],
         showIconicDescription: prev.uiState.showIconicDescription,
         highlightFurnishable: prev.uiState.highlightFurnishable,
-        showScoreSummary: nextMode === 'GAME_OVER'
+        showScoreSummary: nextMode === 'GAME_OVER',
+        draftingWallsLeft: prev.uiState.draftingWallsLeft,
+        draftingScore: prev.uiState.draftingScore
       };
-
-      if (nextMode === 'GAME_OVER') {
-        scoreService.saveHighScore(nextState);
-      }
-
-      // Auto-save if logged in
-      if (user) {
-        setIsSaving(true);
-        const performSave = async (slotId: string) => {
-          await saveService.saveGame(slotId, nextState);
-          setIsSaving(false);
-        };
-
-        if (currentSlotId) {
-          performSave(currentSlotId);
-        } else {
-          // Find slot on the fly if missing
-          saveService.findOpenSlot().then(slotId => {
-            setCurrentSlotId(slotId);
-            performSave(slotId);
-          });
-        }
-      }
 
       return nextState;
     });
   };
+
+  // Auto-save effect
+  useEffect(() => {
+    let active = true;
+    if (!user || !currentSlotId) return;
+    
+    // Only save if we are in a stable state (IDLE or GAME_OVER)
+    // and some progress has been made (not just initialized)
+    const isStable = gameState.uiState.mode === 'IDLE' || gameState.uiState.mode === 'GAME_OVER';
+    if (!isStable) return;
+
+    // Avoid saving the very first state if nothing happened
+    if (gameState.actionBoard.round === 1 && gameState.actionBoard.turn === 1 && gameState.actionBoard.usedActionsThisRound.length === 0 && gameState.uiState.mode !== 'GAME_OVER') {
+      return;
+    }
+
+    const performSave = async () => {
+      setIsSaving(true);
+      try {
+        await saveService.saveGame(currentSlotId, gameState);
+        if (gameState.uiState.mode === 'GAME_OVER' && active) {
+          await scoreService.saveHighScore(gameState);
+        }
+      } catch (error) {
+        console.error("Auto-save failed:", error);
+      } finally {
+        if (active) setIsSaving(false);
+      }
+    };
+
+    performSave();
+    return () => { active = false; };
+  }, [gameState.actionBoard.round, gameState.actionBoard.turn, gameState.uiState.mode, user, currentSlotId]);
 
   const startNewGame = () => {
     const newState = initializeGame();
@@ -879,6 +947,7 @@ export default function App() {
 
     setGameState(prev => ({
       ...prev,
+      gameId: generateGameId(),
       era: 1,
       goods: zeroGoods,
       cave: initialCave,
@@ -892,7 +961,10 @@ export default function App() {
         draftingScore: 0,
         draftingWallsLeft: 3,
         showScoreSummary: false
-      }
+      },
+      era1Score: 0,
+      era1RoomVP: 0,
+      era1GoldVP: 0
     }));
   };
 
@@ -994,9 +1066,17 @@ export default function App() {
         totalRounds: 11
       };
 
+      const scoreDetails = calculateScore(prev);
+      const era1Score = scoreDetails.totalVP;
+      const era1RoomVP = scoreDetails.baseVP;
+      const era1GoldVP = scoreDetails.goldVP;
+
       return {
         ...prev,
         era: 2,
+        era1Score,
+        era1RoomVP,
+        era1GoldVP,
         cave: combinedCave,
         walls: newWalls,
         actionBoard: nextActionBoard,
@@ -1637,7 +1717,8 @@ export default function App() {
   const isDraftingMode = gameState.uiState.mode === 'DRAFTING' || gameState.uiState.mode === 'DRAFTING_PLACE_ROOM' || gameState.uiState.mode === 'DRAFTING_COMPLETE';
 
   return (
-    <div className="min-h-screen bg-stone-900 text-stone-100 p-4 md:p-8 font-sans flex flex-col">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-stone-900 text-stone-100 p-4 md:p-8 font-sans flex flex-col">
       <div className="max-w-[1570px] mx-auto w-full space-y-6 flex-1 flex flex-col">
         {gameState.uiState.showScoreSummary && (
           <ScoreSummary 
@@ -1771,7 +1852,7 @@ export default function App() {
                 board={gameState.actionBoard} 
                 activeActionTile={gameState.uiState.activeActionTile}
                 showIconicDescription={gameState.uiState.showIconicDescription}
-                disabled={gameState.uiState.mode !== 'IDLE' || gameState.uiState.mode === 'GAME_OVER'}
+                disabled={gameState.uiState.mode !== 'IDLE'}
                 era={gameState.era}
                 onTakeAction={handleTakeAction} 
               />
@@ -1950,5 +2031,6 @@ export default function App() {
         </div>
       )}
     </div>
+    </ErrorBoundary>
   );
 }

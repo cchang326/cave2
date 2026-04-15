@@ -76,14 +76,14 @@ service cloud.firestore {
              data.metadata.keys().hasAll(['round', 'turn', 'score']) &&
              data.metadata.round is int &&
              data.metadata.turn is int &&
-             data.metadata.score is int;
+             data.metadata.score is number;
     }
 
     function isValidGameLog(data) {
       return data.keys().hasAll(['userId', 'gameId', 'score', 'gameState', 'timestamp', 'cheatsUsed']) &&
              data.userId is string &&
              data.gameId is string &&
-             data.score is int &&
+             data.score is number &&
              data.gameState is map &&
              data.timestamp is timestamp &&
              data.cheatsUsed is bool;

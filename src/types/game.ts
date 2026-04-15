@@ -67,7 +67,7 @@ export interface ActionBoardState {
   totalRounds: number;
 }
 
-export type ChecklistActionType = 'EXCAVATE' | 'FURNISH' | 'ROOM_ACTION' | 'GAIN' | 'PAY' | 'CHOICE' | 'BUILD_WALL' | 'REMOVE_WALL' | 'PAY_DYNAMIC';
+export type ChecklistActionType = 'EXCAVATE' | 'FURNISH' | 'ROOM_ACTION' | 'GAIN' | 'PAY' | 'CHOICE' | 'BUILD_WALL' | 'REMOVE_WALL' | 'PAY_DYNAMIC' | 'GAIN_CALCULATED';
 
 export interface ChecklistItem {
   id: string;
@@ -116,4 +116,7 @@ export interface GameState {
   gameId: string;
   cheatsUsed: boolean;
   era: 1 | 2;
+  era1Score: number;
+  era1RoomVP: number;
+  era1GoldVP: number;
 }

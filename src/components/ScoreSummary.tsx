@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { GameState } from '../types/game';
-import { Trophy, Coins, Home, Star, User, Loader2, History, Calendar, Zap, CheckSquare as CheckSquareIcon, Square as SquareIcon } from 'lucide-react';
+import { Trophy, Coins, Home, Star, User, Loader2, History, Calendar, Zap, CheckSquare as CheckSquareIcon, Square as SquareIcon, Clock, Sword, Cuboid } from 'lucide-react';
 import { calculateScore } from '../utils/scoring';
 import { db, auth, handleFirestoreError, OperationType } from '../firebase';
 import { collection, query, orderBy, limit, onSnapshot, where } from 'firebase/firestore';
@@ -25,7 +25,11 @@ interface GameHistoryEntry {
 }
 
 export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose, viewOnly = false, userRole }) => {
-  const { baseVP, goldVP, bonusVP, totalVP, bonusDetails } = calculateScore(gameState);
+  const { 
+    totalVP, 
+    era1Score, era1RoomVP, era1GoldVP,
+    era2Score, era2RoomVP, era2WeaponVP, era2GoldVP, era2IronVP 
+  } = calculateScore(gameState);
   const [history, setHistory] = useState<GameHistoryEntry[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
@@ -65,8 +69,8 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
         
         const sortedEntries = [...entries].sort((a, b) => {
           if (b.score !== a.score) return b.score - a.score;
-          const timeA = a.timestamp?.toMillis?.() || 0;
-          const timeB = b.timestamp?.toMillis?.() || 0;
+          const timeA = a.timestamp?.toMillis?.() || a.timestamp?.seconds * 1000 || 0;
+          const timeB = b.timestamp?.toMillis?.() || b.timestamp?.seconds * 1000 || 0;
           return timeB - timeA;
         });
         
@@ -94,8 +98,8 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
             
             const sortedEntries = [...entries].sort((a, b) => {
               if (b.score !== a.score) return b.score - a.score;
-              const timeA = a.timestamp?.toMillis?.() || 0;
-              const timeB = b.timestamp?.toMillis?.() || 0;
+              const timeA = a.timestamp?.toMillis?.() || a.timestamp?.seconds * 1000 || 0;
+              const timeB = b.timestamp?.toMillis?.() || b.timestamp?.seconds * 1000 || 0;
               return timeB - timeA;
             });
             
@@ -120,12 +124,24 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
 
   const formatDate = (timestamp: any) => {
     if (!timestamp) return 'Just now';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    try {
+      if (typeof timestamp.toDate === 'function') {
+        const date = timestamp.toDate();
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      if (timestamp.seconds) {
+        const date = new Date(timestamp.seconds * 1000);
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      const date = new Date(timestamp);
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      return 'Unknown date';
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[300] p-4 overflow-y-auto">
       <div className="bg-stone-800 border-2 border-orange-500/50 rounded-2xl p-8 max-w-4xl w-full shadow-2xl my-8 flex flex-col md:flex-row gap-8">
         <div className="flex-1">
           <div className="flex flex-col items-center mb-8">
@@ -136,38 +152,75 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
             <p className="text-stone-400 mt-2">{gameState.uiState.mode === 'GAME_OVER' ? 'Final Score Breakdown' : 'Your progress so far'}</p>
           </div>
 
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center justify-between p-3 bg-stone-900/50 rounded-lg border border-stone-700">
-              <div className="flex items-center gap-3 text-stone-300">
-                <Home className="w-5 h-5 text-blue-400" />
-                <span>Furnished Rooms</span>
+          <div className="space-y-6 mb-8">
+            {/* Era I Section */}
+            <div className="bg-stone-900/40 rounded-xl border border-stone-700/50 overflow-hidden">
+              <div className="bg-stone-700/30 px-4 py-2 border-b border-stone-700/50 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-orange-400" />
+                <span className="text-xs font-bold uppercase tracking-widest text-stone-400">Era I: The Stone Age</span>
               </div>
-              <span className="font-bold text-xl text-stone-100">{baseVP}</span>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-stone-900/50 rounded-lg border border-stone-700">
-              <div className="flex items-center gap-3 text-stone-300">
-                <Coins className="w-5 h-5 text-yellow-400" />
-                <span>Gold (1 VP each)</span>
-              </div>
-              <span className="font-bold text-xl text-stone-100">{goldVP}</span>
-            </div>
-
-            {bonusDetails.length > 0 && (
-              <div className="p-3 bg-stone-900/50 rounded-lg border border-stone-700 space-y-2">
-                <div className="flex items-center gap-3 text-stone-300 mb-3">
-                  <Star className="w-5 h-5 text-purple-400" />
-                  <span>End Game Bonuses</span>
-                </div>
-                {bonusDetails.map((bonus, idx) => (
-                  <div key={idx} className="flex justify-between text-sm pl-8">
-                    <span className="text-stone-400">{bonus.name}</span>
-                    <span className="font-bold text-stone-200">+{bonus.vp}</span>
+              <div className="p-4 space-y-3">
+                <div className="flex justify-between items-center text-stone-300">
+                  <div className="flex items-center gap-2">
+                    <Home className="w-4 h-4 text-blue-400" />
+                    <span className="text-sm">Room VP</span>
                   </div>
-                ))}
-                <div className="flex justify-between border-t border-stone-700 pt-2 mt-2 pl-8">
-                  <span className="text-stone-300 font-medium">Total Bonus</span>
-                  <span className="font-bold text-lg text-purple-400">{bonusVP}</span>
+                  <span className="font-mono font-bold">{era1RoomVP}</span>
+                </div>
+                <div className="flex justify-between items-center text-stone-300">
+                  <div className="flex items-center gap-2">
+                    <Coins className="w-4 h-4 text-yellow-400" />
+                    <span className="text-sm">Gold (1 VP each)</span>
+                  </div>
+                  <span className="font-mono font-bold">{era1GoldVP}</span>
+                </div>
+                <div className="pt-2 border-t border-stone-700/50 flex justify-between items-center">
+                  <span className="text-sm font-bold text-orange-200">Era I Score</span>
+                  <span className="text-xl font-black text-orange-400">{era1Score}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Era II Section */}
+            {gameState.era === 2 && (
+              <div className="bg-stone-900/40 rounded-xl border border-stone-700/50 overflow-hidden">
+                <div className="bg-stone-700/30 px-4 py-2 border-b border-stone-700/50 flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-purple-400" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-stone-400">Era II: The Iron Age</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="flex justify-between items-center text-stone-300">
+                    <div className="flex items-center gap-2">
+                      <Home className="w-4 h-4 text-blue-400" />
+                      <span className="text-sm">Room VP</span>
+                    </div>
+                    <span className="font-mono font-bold">{era2RoomVP}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-stone-300">
+                    <div className="flex items-center gap-2">
+                      <Sword className="w-4 h-4 text-red-400" />
+                      <span className="text-sm">Weapon (1 VP each)</span>
+                    </div>
+                    <span className="font-mono font-bold">{era2WeaponVP}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-stone-300">
+                    <div className="flex items-center gap-2">
+                      <Coins className="w-4 h-4 text-yellow-400" />
+                      <span className="text-sm">Gold (0.5 VP each)</span>
+                    </div>
+                    <span className="font-mono font-bold">{era2GoldVP}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-stone-300">
+                    <div className="flex items-center gap-2">
+                      <Cuboid className="w-4 h-4 text-blue-300" />
+                      <span className="text-sm">Iron (0.5 VP each)</span>
+                    </div>
+                    <span className="font-mono font-bold">{era2IronVP}</span>
+                  </div>
+                  <div className="pt-2 border-t border-stone-700/50 flex justify-between items-center">
+                    <span className="text-sm font-bold text-purple-200">Era II Score</span>
+                    <span className="text-xl font-black text-purple-400">{era2Score}</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -263,7 +316,7 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
                                 {formatDate(entry.timestamp)}
                               </span>
                               {entry.cheatsUsed && (
-                                <Zap className="w-2.5 h-2.5 text-yellow-500 fill-yellow-500" title="Cheats used" />
+                                <Zap className="w-2.5 h-2.5 text-yellow-500 fill-yellow-500" />
                               )}
                             </div>
                             <span className={`font-medium ${isCurrentGame ? 'text-orange-200' : 'text-stone-200'}`}>

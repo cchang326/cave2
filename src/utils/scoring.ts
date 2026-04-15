@@ -5,6 +5,14 @@ export interface ScoreDetails {
   goldVP: number;
   bonusVP: number;
   totalVP: number;
+  era1Score: number;
+  era1RoomVP: number;
+  era1GoldVP: number;
+  era2Score: number;
+  era2RoomVP: number;
+  era2WeaponVP: number;
+  era2GoldVP: number;
+  era2IronVP: number;
   bonusDetails: { name: string; vp: number }[];
 }
 
@@ -15,34 +23,57 @@ export function calculateScore(gameState: GameState): ScoreDetails {
 
   const baseVP = furnishedRooms.reduce((sum, room) => sum + room.vp, 0);
   
-  // In Era I, Gold is 1 VP each. In Era II, it's 0.5 VP (but added to Era I score if playing full game).
-  // For simplicity and following the rulebook's "Era II score" definition:
-  const goldVP = gameState.era === 1 ? gameState.goods.gold : gameState.goods.gold * 0.5;
-  
-  let bonusVP = 0;
-  const bonusDetails: { name: string; vp: number }[] = [];
-
-  if (gameState.era === 2) {
-    // Era II specific scoring
-    const weaponsVP = gameState.goods.weapons;
-    const ironVP = gameState.goods.iron * 0.5;
-    
-    if (weaponsVP > 0) bonusDetails.push({ name: 'Weapons', vp: weaponsVP });
-    if (ironVP > 0) bonusDetails.push({ name: 'Iron', vp: ironVP });
-    
-    bonusVP = weaponsVP + ironVP;
+  if (gameState.era === 1) {
+    const goldVP = gameState.goods.gold;
+    const totalVP = baseVP + goldVP;
+    return { 
+      baseVP, 
+      goldVP, 
+      bonusVP: 0, 
+      totalVP, 
+      era1Score: totalVP,
+      era1RoomVP: baseVP,
+      era1GoldVP: goldVP,
+      era2Score: 0,
+      era2RoomVP: 0,
+      era2WeaponVP: 0,
+      era2GoldVP: 0,
+      era2IronVP: 0,
+      bonusDetails: [] 
+    };
   }
 
-  furnishedRooms.filter(r => r.color === 'blue').forEach(room => {
-    let vp = 0;
-    // Blue room bonuses could be added here if any exist in data
-    if (vp > 0) {
-      bonusVP += vp;
-      bonusDetails.push({ name: room.name, vp });
-    }
-  });
+  // Era II Scoring
+  // Era II score = Room VP + 1 VP per Weapon + 0.5 VP per Iron + 0.5 VP per Gold
+  const era2RoomVP = baseVP;
+  const era2WeaponVP = gameState.goods.weapons;
+  const era2IronVP = gameState.goods.iron * 0.5;
+  const era2GoldVP = gameState.goods.gold * 0.5;
+  
+  const era2Score = era2RoomVP + era2WeaponVP + era2IronVP + era2GoldVP;
+  
+  // Final score = Era I score + Era II score
+  const era1Score = gameState.era1Score || 0;
+  const totalVP = era1Score + era2Score;
 
-  const totalVP = baseVP + goldVP + bonusVP;
+  const bonusDetails: { name: string; vp: number }[] = [];
+  if (era2WeaponVP > 0) bonusDetails.push({ name: 'Weapons (1 VP)', vp: era2WeaponVP });
+  if (era2IronVP > 0) bonusDetails.push({ name: 'Iron (0.5 VP)', vp: era2IronVP });
+  if (era2GoldVP > 0) bonusDetails.push({ name: 'Gold (0.5 VP)', vp: era2GoldVP });
 
-  return { baseVP, goldVP, bonusVP, totalVP, bonusDetails };
+  return { 
+    baseVP, 
+    goldVP: era2GoldVP, 
+    bonusVP: era2WeaponVP + era2IronVP + era2GoldVP, 
+    totalVP, 
+    era1Score,
+    era1RoomVP: gameState.era1RoomVP || 0,
+    era1GoldVP: gameState.era1GoldVP || 0,
+    era2Score,
+    era2RoomVP,
+    era2WeaponVP,
+    era2GoldVP,
+    era2IronVP,
+    bonusDetails 
+  };
 }

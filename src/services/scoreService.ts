@@ -32,7 +32,13 @@ export const scoreService = {
 
     const scoreDetails = calculateScore(state);
     const score = scoreDetails.totalVP;
-    const gameId = state.gameId;
+    
+    // Ensure we have a valid gameId
+    let gameId = state.gameId;
+    if (!gameId || gameId === '') {
+      console.warn('Game finished with empty gameId. Generating one now.');
+      gameId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    }
 
     try {
       const logRef = doc(db, 'game_logs', gameId);
@@ -42,7 +48,7 @@ export const scoreService = {
       const sameGameSnapshot = await getDocs(qSameGame);
       const isNewGameId = sameGameSnapshot.empty;
 
-      console.log(`Saving score for game ${gameId}: ${score}`);
+      console.log(`Saving score for game ${gameId}: ${score} (New: ${isNewGameId})`);
       await setDoc(logRef, {
         userId: user.uid,
         gameId: gameId,
@@ -53,10 +59,11 @@ export const scoreService = {
       }, { merge: true });
 
       if (isNewGameId) {
+        console.log('Incrementing global games finished count');
         await incrementGamesFinished();
       }
 
-      // Global Pruning: Ensure the player only has 10 total high score entries across all games
+      // Global Pruning: Ensure the player only has 20 total high score entries across all games
       const qAll = query(
         collection(db, 'game_logs'),
         where('userId', '==', user.uid),
@@ -64,9 +71,9 @@ export const scoreService = {
       );
       
       const allSnapshot = await getDocs(qAll);
-      if (allSnapshot.docs.length > 10) {
-        const toDelete = allSnapshot.docs.slice(10);
-        console.log(`Pruning ${toDelete.length} scores to maintain top 10 limit`);
+      if (allSnapshot.docs.length > 20) {
+        const toDelete = allSnapshot.docs.slice(20);
+        console.log(`Pruning ${toDelete.length} scores to maintain top 20 limit`);
         for (const entry of toDelete) {
           await deleteDoc(doc(db, 'game_logs', entry.id));
         }

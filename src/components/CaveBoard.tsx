@@ -5,6 +5,7 @@ import { OreIcon } from './OreIcon';
 import { isValidRoomPlacement } from '../utils/walls';
 import { WallRequirementIcon } from './WallRequirementIcon';
 import { IconicDescription } from './IconicDescription';
+import { RoomTileComponent } from './RoomTileComponent';
 
 interface Props {
   cave: CaveSpace[];
@@ -113,9 +114,8 @@ export const CaveBoard: React.FC<Props> = ({
                 className={`w-full h-full rounded-lg flex flex-col items-center justify-center text-center p-0.5 border-2 transition-all relative
                   ${space.state === 'FACE_DOWN' && !isExcavatable ? 'bg-stone-600 border-stone-500 shadow-inner' : ''}
                   ${space.state === 'FACE_DOWN' && isExcavatable ? 'bg-stone-500 border-orange-400 shadow-inner cursor-pointer hover:bg-stone-400 ring-4 ring-orange-400/50 animate-game-pulse' : ''}
-                  ${space.state === 'ENTRANCE' ? 'bg-orange-100 border-orange-400 justify-start' : ''}
-                  ${space.state === 'FURNISHED' && space.tile?.color === 'orange' ? 'bg-orange-100 border-orange-400 justify-start' : ''}
-                  ${space.state === 'FURNISHED' && space.tile?.color === 'blue' ? 'bg-blue-100 border-blue-400 justify-start' : ''}
+                  ${space.state === 'ENTRANCE' ? 'justify-start border-transparent' : ''}
+                  ${space.state === 'FURNISHED' ? 'justify-start border-transparent' : ''}
                   ${space.state === 'CROSSED_PICKAXES' && !isFurnishable ? 'bg-stone-800 border-stone-900' : ''}
                   ${space.state === 'CROSSED_PICKAXES' && isFurnishable ? 'bg-stone-800/80 border-dashed border-orange-400 cursor-pointer hover:bg-stone-700 ring-4 ring-orange-400/50 animate-game-pulse' : ''}
                   ${space.state === 'EMPTY' && !isFurnishable ? 'bg-stone-800/50 border-dashed border-stone-600' : ''}
@@ -140,7 +140,7 @@ export const CaveBoard: React.FC<Props> = ({
                   (space.row === 3 && space.col === 1) ||
                   (space.row === 2 && space.col === -1)
                 ) && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20 z-0">
                     <div className="flex items-center gap-1">
                       <span className="text-orange-400 text-2xl font-black">+1</span>
                       <Drumstick className="w-5 h-5 text-orange-500" />
@@ -149,7 +149,7 @@ export const CaveBoard: React.FC<Props> = ({
                 )}
 
                 {space.state !== 'FACE_DOWN' && (space.row === 2 && space.col === -2) && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20 z-0">
                     <div className="flex items-center gap-1">
                       <span className="text-zinc-400 text-2xl font-black">+1</span>
                       <OreIcon className="w-5 h-5 text-zinc-500" />
@@ -175,45 +175,22 @@ export const CaveBoard: React.FC<Props> = ({
                   </div>
                 )}
                 
-                {space.state === 'ENTRANCE' && (
-                  <>
-                    <div className="w-full py-1.5 px-1 rounded-t-md flex items-center justify-start -mt-0.5 -mx-0.5 bg-amber-500 text-white">
-                      <span className="text-[11px] font-bold leading-tight truncate pl-1">Cave Entrance</span>
-                    </div>
-                    {space.tile?.trigger === 'action' && (
-                      <div className="flex-1 w-full flex flex-col justify-center items-center pb-1">
-                        {showIconicDescription && space.tile.iconicDescription ? (
-                          <IconicDescription description={space.tile.iconicDescription} className="justify-center" />
-                        ) : (
-                          <span className="text-[10px] text-stone-900 leading-tight px-1">{space.tile.effectDescription}</span>
-                        )}
-                      </div>
-                    )}
-                  </>
+                {space.state === 'ENTRANCE' && space.tile && (
+                  <RoomTileComponent
+                    tile={space.tile}
+                    showIconicDescription={showIconicDescription}
+                    isActivated={isActivated}
+                    className={`absolute inset-0 w-full h-full ${isActionable ? 'ring-4 ring-green-400/50 animate-game-pulse' : ''}`}
+                  />
                 )}
                 
                 {space.state === 'FURNISHED' && space.tile && (
-                  <>
-                    <div className={`relative w-full py-1.5 px-1 rounded-t-md flex items-center justify-start -mt-0.5 -mx-0.5 ${space.tile.color === 'orange' ? 'bg-amber-500 text-white' : 'bg-blue-600 text-white'}`}>
-                      <span className={`${['Furniture Workshop', 'Prospecting Site', 'Equipment Room', 'Wood Storeroom'].includes(space.tile.name) ? 'text-[9.5px]' : 'text-[11px]'} font-bold leading-tight truncate pl-1 pr-6`}>
-                        {space.tile.name}
-                      </span>
-                      <div className="absolute right-1 flex items-center justify-center">
-                        <Shield className="w-5 h-5 text-white/40 fill-amber-400" />
-                        <span className="absolute text-stone-900 text-[9px] font-bold pb-0.5">{space.tile.vp}</span>
-                      </div>
-                    </div>
-                    <div className="flex justify-center w-full bg-stone-300/80 py-0.5 px-1 border-b border-stone-400/30">
-                      <WallRequirementIcon req={space.tile.wallRequirement} className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1 w-full flex flex-col justify-center items-center pb-1">
-                      {showIconicDescription && space.tile.iconicDescription ? (
-                        <IconicDescription description={space.tile.iconicDescription} className="justify-center" />
-                      ) : (
-                        <span className="text-[10px] text-stone-900 leading-tight text-center px-1">{space.tile.effectDescription}</span>
-                      )}
-                    </div>
-                  </>
+                  <RoomTileComponent
+                    tile={space.tile}
+                    showIconicDescription={showIconicDescription}
+                    isActivated={isActivated}
+                    className={`absolute inset-0 w-full h-full ${isActionable ? 'ring-4 ring-green-400/50 animate-game-pulse' : ''}`}
+                  />
                 )}
               </div>
 

@@ -16,7 +16,7 @@ export const STAGE_2_ACTIONS: ActionTile[] = [
 export const STAGE_3_ACTIONS: ActionTile[] = [
   { id: 'expansion', name: 'Expansion', stage: 3, description: 'Excavate once AND/OR Pay either 5 food or 2 gold to furnish a cavern', iconicDescription: '[pickaxe] \n 5[food] | 2[gold] [arrow-right] [furnish]', era: 1 },
   { id: 'breach', name: 'Breach', stage: 3, description: 'Remove one wall from anywhere to gain 2 stone, 3 food, and 1 gold', iconicDescription: 'Remove a wall [arrow-right] \n +2[stone] +3[food] +1[gold]', era: 1 },
-  { id: 'drift_mining', name: 'Drift Mining', stage: 3, description: 'Activate 1 orange room AND/OR Excavate once', iconicDescription: '[1] [pickaxe]', era: 1 },
+  { id: 'drift_mining', name: 'Drift Mining', stage: 3, description: 'Activate 1 orange room AND/OR Excavate once', iconicDescription: '[1][space][pickaxe]', era: 1 },
   { id: 'expedition', name: 'Expedition', stage: 3, description: 'Pay either 5 wood or 5 stone to gain up to 4 gold OR Activate 3 orange rooms', iconicDescription: '5[wood] | 5[stone] [arrow-right] +4[gold] \n {or} \n [3]', era: 1 },
 ];
 
