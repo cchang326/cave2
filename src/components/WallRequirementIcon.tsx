@@ -22,25 +22,28 @@ export const WallRequirementIcon: React.FC<Props> = ({ req, className = '' }) =>
     [top, right, bottom, left] = walls;
   }
 
-  const getBorderClass = (state: number) => {
-    if (state === 2) return 'bg-stone-800';
-    if (state === 1) return 'bg-stone-400';
-    return 'hidden';
+  const getBorderColor = (state: number) => {
+    if (state === 2) return '#1c1917'; // stone-800
+    if (state === 1) return '#a8a29e'; // stone-400
+    return 'transparent';
   };
 
   const title = `Requires ${req.min === req.max ? req.min : `${req.min}-${req.max}`} ${req.configuration !== 'any' ? req.configuration + ' ' : ''}wall(s)`;
 
   return (
     <div 
-      className={`w-6 h-6 bg-white/50 rounded-sm flex items-center justify-center ${className}`}
+      className={`bg-white/50 rounded-sm flex items-center justify-center shrink-0 ${className || 'w-6 h-6'}`}
       title={title}
     >
-      <div className="w-4 h-4 relative">
-        <div className={`absolute top-0 left-0 right-0 h-[2px] ${getBorderClass(top)}`} />
-        <div className={`absolute bottom-0 left-0 right-0 h-[2px] ${getBorderClass(bottom)}`} />
-        <div className={`absolute top-0 bottom-0 left-0 w-[2px] ${getBorderClass(left)}`} />
-        <div className={`absolute top-0 bottom-0 right-0 w-[2px] ${getBorderClass(right)}`} />
-      </div>
+      <div 
+        className="w-3 h-3 box-content translate-y-[-0.5px]"
+        style={{
+          borderTop: `2px solid ${getBorderColor(top)}`,
+          borderRight: `2px solid ${getBorderColor(right)}`,
+          borderBottom: `2px solid ${getBorderColor(bottom)}`,
+          borderLeft: `2px solid ${getBorderColor(left)}`,
+        }}
+      />
     </div>
   );
 };

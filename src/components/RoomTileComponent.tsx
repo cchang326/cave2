@@ -2,8 +2,10 @@ import React, { ReactNode } from 'react';
 import { RoomTile } from '../types/game';
 import { WallRequirementIcon } from './WallRequirementIcon';
 import { IconicDescription } from './IconicDescription';
-import { Shield, TreePine, Wheat, Leaf, Drumstick, Coins } from 'lucide-react';
+import { Shield, TreePine, Wheat, Leaf, Drumstick, Coins, Sword, Cuboid } from 'lucide-react';
 import { StoneIcon } from './StoneIcon';
+import { OreIcon } from './OreIcon';
+import { DonkeyIcon } from './DonkeyIcon';
 
 interface Props {
   tile: RoomTile;
@@ -15,6 +17,7 @@ interface Props {
   onClick?: () => void;
   className?: string;
   isActivated?: boolean;
+  highlightFurnishable?: boolean;
 }
 
 const renderCost = (cost: RoomTile['cost']): ReactNode => {
@@ -63,6 +66,34 @@ const renderCost = (cost: RoomTile['cost']): ReactNode => {
       </span>
     );
   }
+  if (cost.donkey) {
+    parts.push(
+      <span key="donkey" className="flex items-center">
+        {cost.donkey}<DonkeyIcon className={`${iconClass} text-orange-950`} />
+      </span>
+    );
+  }
+  if (cost.ore) {
+    parts.push(
+      <span key="ore" className="flex items-center">
+        {cost.ore}<OreIcon className={`${iconClass} text-zinc-950`} />
+      </span>
+    );
+  }
+  if (cost.iron) {
+    parts.push(
+      <span key="iron" className="flex items-center">
+        {cost.iron}<Cuboid className={`${iconClass} text-blue-800`} />
+      </span>
+    );
+  }
+  if (cost.weapons) {
+    parts.push(
+      <span key="weapons" className="flex items-center">
+        {cost.weapons}<Sword className={`${iconClass} text-red-400`} />
+      </span>
+    );
+  }
   
   return (
     <div className="flex items-center gap-1.5">
@@ -80,9 +111,10 @@ export const RoomTileComponent: React.FC<Props> = ({
   furnishable = true,
   onClick,
   className = "",
-  isActivated = false
+  isActivated = false,
+  highlightFurnishable = false
 }) => {
-  const shouldDarken = (isSelectable && !furnishable) || isActivated;
+  const shouldDarken = ((isSelectable || highlightFurnishable) && !furnishable) || isActivated;
   
   return (
     <div 
@@ -114,7 +146,7 @@ export const RoomTileComponent: React.FC<Props> = ({
       </div>
 
       {/* Info Bar (Cost + Wall Req) */}
-      <div className="flex items-center justify-center gap-1.5 w-full bg-stone-300/80 py-0.5 px-1 border-b border-stone-400/30">
+      <div className="flex items-center justify-center gap-1.5 w-full bg-stone-300/80 py-1 px-1 border-b border-stone-400/30">
         {showCost && Object.keys(tile.cost).length > 0 && (
           <div className="text-[10px] font-bold text-stone-900 flex items-center gap-1">
             <span className="text-[8px] uppercase tracking-tighter opacity-80">Cost:</span>

@@ -43,7 +43,9 @@ export const scoreService = {
     }
 
     try {
-      const logRef = doc(db, 'game_logs', gameId);
+      // Use a composite ID to allow both Era I and Era II scores for the same game session to be saved separately
+      const entryId = `${gameId}_${gameType}`;
+      const logRef = doc(db, 'game_logs', entryId);
       
       // Check if this gameId has already been recorded to avoid double-counting global stats
       const qSameGame = query(collection(db, 'game_logs'), where('gameId', '==', gameId));

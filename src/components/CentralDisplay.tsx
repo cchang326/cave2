@@ -218,7 +218,7 @@ export const CentralDisplay: React.FC<Props> = ({
           const isSelected = selectedRoomId === tile.id;
           const furnishable = isFurnishable(tile);
           const isActuallySelectable = isSelectable && furnishable;
-          const shouldBlink = isActuallySelectable && !isSelected;
+          const shouldBlink = isSelectable && furnishable && !isSelected;
 
           return (
             <RoomTileComponent
@@ -229,8 +229,9 @@ export const CentralDisplay: React.FC<Props> = ({
               isSelected={isSelected}
               isSelectable={isSelectable}
               furnishable={furnishable}
+              highlightFurnishable={highlightFurnishable}
               onClick={() => isActuallySelectable && onRoomClick && onRoomClick(tile.id)}
-              className={shouldBlink ? 'ring-4 ring-stone-200/40 animate-game-pulse' : ''}
+              className={shouldBlink ? 'ring-4 ring-orange-400/50 animate-game-pulse' : ''}
             />
           );
         })}

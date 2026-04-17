@@ -113,13 +113,21 @@ export const ChecklistUI: React.FC<Props> = ({
           </div>
         ) : (
           checklist.map(item => (
-            <div key={item.id} className={`py-1.5 px-2.5 rounded-lg border shadow-sm transition-all ${
-              item.status === 'DONE' ? 'bg-stone-100/90 border-stone-300 text-stone-400' :
-              item.status === 'SKIPPED' ? 'bg-stone-200/60 border-stone-300 text-stone-400' :
+            <div key={item.id} className={`py-1.5 px-2.5 rounded-lg border shadow-sm transition-all relative overflow-hidden ${
+              item.status === 'DONE' ? 'bg-stone-200/90 border-stone-400 text-stone-600' :
+              item.status === 'SKIPPED' ? 'bg-stone-300/60 border-stone-400 text-stone-500' :
               item.status === 'DOING' ? 'bg-white border-orange-500 text-stone-900 ring-2 ring-orange-500/30' :
               'bg-stone-50 border-stone-300 text-stone-800'
             }`}>
-              <div className="flex justify-between items-center gap-3">
+              {(item.status === 'DONE' || item.status === 'SKIPPED') && (
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: '100%' }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="absolute top-1/2 left-0 h-[1.5px] bg-stone-600/40 -translate-y-1/2 pointer-events-none z-10"
+                />
+              )}
+              <div className="flex justify-between items-center gap-3 relative">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="flex-shrink-0 flex items-center justify-center w-4">
                     {item.status === 'DONE' && <CheckSquare className="w-4 h-4 text-green-600" />}
@@ -131,14 +139,14 @@ export const ChecklistUI: React.FC<Props> = ({
                         : <Square className="w-4 h-4 text-stone-400" />
                     )}
                   </div>
-                  <div className="flex flex-col min-w-0">
-                    <span className={`font-medium text-sm leading-tight flex items-center ${item.status === 'DONE' || item.status === 'SKIPPED' ? 'line-through decoration-stone-400 decoration-2 opacity-60' : ''}`}>
+                  <div className="flex flex-col min-w-0 relative">
+                    <div className="font-medium text-sm leading-tight flex items-center transition-all">
                       {showIconicDescription ? (
                         <ChecklistIconRenderer item={item} large={true} />
                       ) : (
                         item.text
                       )}
-                    </span>
+                    </div>
                     {!showIconicDescription && item.data?.gainAfter && Object.keys(item.data.gainAfter).length > 0 && (
                       <div className="flex items-center gap-1.5 mt-1">
                         <span className="text-[9px] text-stone-500 uppercase font-bold tracking-tighter">Bonus:</span>

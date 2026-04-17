@@ -111,17 +111,17 @@ export const CaveBoard: React.FC<Props> = ({
 
               <div 
                 onClick={() => isClickable && onSpaceClick(space.id)}
-                className={`w-full h-full rounded-lg flex flex-col items-center justify-center text-center p-0.5 border-2 transition-all relative
-                  ${space.state === 'FACE_DOWN' && !isExcavatable ? 'bg-stone-600 border-stone-500 shadow-inner' : ''}
-                  ${space.state === 'FACE_DOWN' && isExcavatable ? 'bg-stone-500 border-orange-400 shadow-inner cursor-pointer hover:bg-stone-400 ring-4 ring-orange-400/50 animate-game-pulse' : ''}
-                  ${space.state === 'ENTRANCE' ? 'justify-start border-transparent' : ''}
-                  ${space.state === 'FURNISHED' ? 'justify-start border-transparent' : ''}
-                  ${space.state === 'CROSSED_PICKAXES' && !isFurnishable ? 'bg-stone-800 border-stone-900' : ''}
-                  ${space.state === 'CROSSED_PICKAXES' && isFurnishable ? 'bg-stone-800/80 border-dashed border-orange-400 cursor-pointer hover:bg-stone-700 ring-4 ring-orange-400/50 animate-game-pulse' : ''}
-                  ${space.state === 'EMPTY' && !isFurnishable ? 'bg-stone-800/50 border-dashed border-stone-600' : ''}
-                  ${space.state === 'EMPTY' && isFurnishable ? 'bg-stone-800/80 border-dashed border-orange-400 cursor-pointer hover:bg-stone-700 ring-4 ring-orange-400/50 animate-game-pulse' : ''}
+                className={`w-full h-full rounded-lg flex flex-col items-center justify-center text-center transition-all relative
+                  ${space.state === 'FACE_DOWN' && !isExcavatable ? 'bg-stone-600 border-stone-500 border-2 p-0.5 shadow-inner' : ''}
+                  ${space.state === 'FACE_DOWN' && isExcavatable ? 'bg-stone-500 border-orange-400 border-2 p-0.5 shadow-inner cursor-pointer hover:bg-stone-400 ring-4 ring-orange-400/50 animate-game-pulse' : ''}
+                  ${space.state === 'ENTRANCE' ? 'justify-start' : ''}
+                  ${space.state === 'FURNISHED' ? 'justify-start' : ''}
+                  ${space.state === 'CROSSED_PICKAXES' && !isFurnishable ? 'bg-stone-800 border-stone-900 border-2 p-0.5' : ''}
+                  ${space.state === 'CROSSED_PICKAXES' && isFurnishable ? 'bg-stone-800/80 border-dashed border-orange-400 border-2 p-0.5 cursor-pointer hover:bg-stone-700 ring-4 ring-orange-400/50 animate-game-pulse' : ''}
+                  ${space.state === 'EMPTY' && !isFurnishable ? 'bg-stone-800/50 border-dashed border-stone-600 border-2 p-0.5' : ''}
+                  ${space.state === 'EMPTY' && isFurnishable ? 'bg-stone-800/80 border-dashed border-orange-400 border-2 p-0.5 cursor-pointer hover:bg-stone-700 ring-4 ring-orange-400/50 animate-game-pulse' : ''}
                   ${isActionable ? 'ring-4 ring-green-400/50 cursor-pointer hover:scale-105 animate-game-pulse' : ''}
-                  ${isActivated ? 'opacity-60 grayscale-[0.5] border-stone-400' : ''}
+                  ${isActivated ? 'opacity-60 grayscale-[0.5]' : ''}
                 `}
               >
                 {isActivated && (
@@ -230,7 +230,7 @@ export const CaveBoard: React.FC<Props> = ({
         })}
         {children && (
           <div 
-            className="z-20 ml-1.5 pointer-events-none"
+            className="z-20 ml-6 pointer-events-none"
             style={{ 
               gridColumn: 3 - minCol, 
               gridRow: `1 / 4` 

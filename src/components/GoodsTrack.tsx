@@ -48,7 +48,7 @@ export const GoodsTrack: React.FC<Props> = ({ goods, onExchange, onUndoExchange,
         <TooltipTrigger>
           <div className="flex items-center gap-2">
             <div className="flex-shrink-0">{goodIcons[good]}</div>
-            <span className="text-white font-mono text-[15px] font-bold leading-none">{goods[good]}</span>
+            <span className="text-white font-mono text-[20px] font-bold leading-none">{goods[good]}</span>
           </div>
         </TooltipTrigger>
         <TooltipContent side="right" className="bg-stone-900 border-stone-700 text-stone-200 text-xs capitalize">

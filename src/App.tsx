@@ -483,7 +483,7 @@ export default function App() {
           activeActionTile: actionId,
           checklist,
           hasInteractedWithChecklist: false,
-          undoSnapshot: JSON.stringify(prev)
+          undoSnapshot: JSON.stringify({ ...prev, uiState: { ...prev.uiState, undoSnapshot: undefined } })
         }
       };
     });
@@ -850,7 +850,8 @@ export default function App() {
         highlightFurnishable: prev.uiState.highlightFurnishable,
         showScoreSummary: nextMode === 'GAME_OVER',
         draftingWallsLeft: prev.uiState.draftingWallsLeft,
-        draftingScore: prev.uiState.draftingScore
+        draftingScore: prev.uiState.draftingScore,
+        undoSnapshot: undefined
       };
 
       return nextState;
@@ -976,9 +977,9 @@ export default function App() {
     setGameState(prev => {
       let currentFdp1 = [...prev.fdp1];
       
-      // 1. Cover remaining uncovered spaces in player's cave with tiles from FDP1
+      // 1. Cover remaining uncovered spaces in player's cave with tiles from FDP1 (Draft Mode ONLY)
       const eraICave = prev.cave.map(space => {
-        if (space.state === 'EMPTY' || space.state === 'CROSSED_PICKAXES') {
+        if (prev.uiState.gameType === 'ERA_II_DRAFT' && (space.state === 'EMPTY' || space.state === 'CROSSED_PICKAXES')) {
           if (currentFdp1.length > 0) {
             const tile = currentFdp1.shift();
             return { ...space, state: 'FACE_DOWN' as const, tile };
@@ -1042,10 +1043,31 @@ export default function App() {
         if (!newWalls.includes(w)) newWalls.push(w);
       });
 
-      // 3. Set all resources to 1
-      const eraIIGoods: GoodsState = {
-        wood: 1, stone: 1, emmer: 1, flax: 1, food: 1, gold: 1, donkey: 1, ore: 1, iron: 1, weapons: 1
-      };
+      // 3. Set resources based on transition mode
+      let eraIIGoods: GoodsState;
+      if (prev.uiState.gameType === 'ERA_II_DRAFT') {
+        // In draft mode, all resources are set to 1
+        eraIIGoods = {
+          wood: 1, stone: 1, emmer: 1, flax: 1, food: 1, gold: 1, donkey: 1, ore: 1, iron: 1, weapons: 1
+        };
+      } else {
+        // In non-draft transition:
+        // - All non-zero Era I goods keep counts
+        // - Era I goods that are 0 are set to 1
+        // - New Era II goods (ore, iron, weapons) are set to 1
+        eraIIGoods = {
+          wood: Math.max(1, prev.goods.wood),
+          stone: Math.max(1, prev.goods.stone),
+          emmer: Math.max(1, prev.goods.emmer),
+          flax: Math.max(1, prev.goods.flax),
+          food: Math.max(1, prev.goods.food),
+          gold: Math.max(1, prev.goods.gold),
+          donkey: 1,
+          ore: 1,
+          iron: 1,
+          weapons: 1
+        };
+      }
 
       // 4. Update central display with Era II non-excavatable rooms
       // For solo mode, remove 3 (out of 6) random non-excavatable Era II room tiles
@@ -1646,6 +1668,9 @@ export default function App() {
     if (gameState.uiState.undoSnapshot) {
       const nextState = JSON.parse(gameState.uiState.undoSnapshot);
       nextState.conversionHistory = [];
+      if (nextState.uiState) {
+        nextState.uiState.undoSnapshot = undefined;
+      }
       setGameState(nextState);
       showNotification("Action undone", 'success');
     }
