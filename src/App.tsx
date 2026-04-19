@@ -97,16 +97,24 @@ function hasWallBetween(r1: number, c1: number, r2: number, c2: number, walls: s
   return walls.includes(wallId);
 }
 
-function getAccessibleSpaces(cave: CaveSpace[], walls: string[], isUndermining: boolean): string[] {
-  const entrances = cave.filter(c => c.state === 'ENTRANCE');
-  if (entrances.length === 0) return [];
-
+function getAccessibleSpaces(cave: CaveSpace[], walls: string[], isUndermining: boolean, era: 1 | 2): string[] {
+  // Define strictly the single external entry point into the system based on the current era
+  const getExternalAccessPointResult = (c: CaveSpace[]) => {
+    if (era === 1) return c.find(s => s.row === 3 && s.col === 0);
+    return c.find(s => s.row === 3 && s.col === -1);
+  };
+  
+  const externalPoint = getExternalAccessPointResult(cave);
   const reachableOpenSpaces = new Set<string>();
-  const queue: CaveSpace[] = [...entrances];
-  for (const entrance of entrances) {
-    reachableOpenSpaces.add(entrance.id);
+  const queue: CaveSpace[] = [];
+
+  // 1. Initial seeds: Start from the single external access point IF it is currently open/excavated.
+  if (externalPoint && externalPoint.state !== 'FACE_DOWN') {
+    reachableOpenSpaces.add(externalPoint.id);
+    queue.push(externalPoint);
   }
 
+  // 2. Propagate reachability through open spaces within the cave
   while (queue.length > 0) {
     const current = queue.shift()!;
     const neighbors = cave.filter(c => {
@@ -118,7 +126,9 @@ function getAccessibleSpaces(cave: CaveSpace[], walls: string[], isUndermining: 
     for (const neighbor of neighbors) {
       if (reachableOpenSpaces.has(neighbor.id)) continue;
       
-      if (['ENTRANCE', 'EMPTY', 'FURNISHED', 'CROSSED_PICKAXES'].includes(neighbor.state)) {
+      // Can only pass through open (excavated) spaces
+      const isOpen = neighbor.state !== 'FACE_DOWN' && ['ENTRANCE', 'EMPTY', 'FURNISHED', 'CROSSED_PICKAXES'].includes(neighbor.state);
+      if (isOpen) {
         if (isUndermining || !hasWallBetween(current.row, current.col, neighbor.row, neighbor.col, walls)) {
           reachableOpenSpaces.add(neighbor.id);
           queue.push(neighbor);
@@ -127,26 +137,36 @@ function getAccessibleSpaces(cave: CaveSpace[], walls: string[], isUndermining: 
     }
   }
 
+  // 3. Determine which FACE_DOWN spaces are accessible for excavation
   const accessibleIds: string[] = [];
   for (const space of cave) {
     if (space.state === 'FACE_DOWN') {
+      // Case A: It is the external entry point for the current era. 
+      // It is always accessible from the outside world.
+      if (externalPoint && space.id === externalPoint.id) {
+        accessibleIds.push(space.id);
+        continue;
+      }
+
+      // Case B: It is adjacent to an open space that is reachable from the entrance.
       const neighbors = cave.filter(c => {
         const dx = Math.abs(c.col - space.col);
         const dy = Math.abs(c.row - space.row);
         return (dx === 1 && dy === 0) || (dx === 0 && dy === 1);
       });
 
-      const isAccessible = neighbors.some(open => {
+      const isAccessibleFromInside = neighbors.some(open => {
         if (!reachableOpenSpaces.has(open.id)) return false;
         if (!isUndermining && hasWallBetween(space.row, space.col, open.row, open.col, walls)) return false;
         return true;
       });
 
-      if (isAccessible) {
+      if (isAccessibleFromInside) {
         accessibleIds.push(space.id);
       }
     }
   }
+
   return accessibleIds;
 }
 
@@ -567,7 +587,7 @@ export default function App() {
         }
       } else if (item.actionType === 'EXCAVATE') {
         const isUndermining = next.uiState.activeActionTile === 'undermining';
-        const accessible = getAccessibleSpaces(next.cave, next.walls, isUndermining);
+        const accessible = getAccessibleSpaces(next.cave, next.walls, isUndermining, next.era);
         if (accessible.length === 0) {
           showNotification("No accessible spaces to excavate!", 'error');
           checklist[itemIndex] = { ...item, status: 'SKIPPED' };
@@ -1040,18 +1060,18 @@ export default function App() {
         { row: 2, col: -2, state: 'FACE_DOWN' as const, openSides: ['top', 'bottom', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
         { row: 2, col: -1, state: 'FACE_DOWN' as const, openSides: ['top', 'bottom', 'left', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
         { row: 3, col: -2, state: 'FACE_DOWN' as const, openSides: ['top', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
-        { row: 3, col: -1, state: 'FACE_DOWN' as const, openSides: ['top', 'left', 'right', 'bottom'] as ("top" | "bottom" | "left" | "right")[], tile: undefined }
+        { row: 3, col: -1, state: 'FACE_DOWN' as const, openSides: ['top', 'left', 'right', 'bottom'] as ("top" | "bottom" | "left" | "right")[], tile: shuffledEraIITiles.shift() }
       ];
 
       // Place 8 tiles on Era II board
-      for (const { row, col, state, openSides } of eraIICoords) {
+      for (const { row, col, state, openSides, tile } of eraIICoords) {
         eraIICave.push({
           id: `space-${row}-${col}`,
           row,
           col,
           state,
           openSides,
-          tile: shuffledEraIITiles.shift()
+          tile
         });
       }
 
@@ -1060,10 +1080,12 @@ export default function App() {
 
       // Update Era I spaces that connect to Era II
       const updatedCave = eraICave.map(space => {
+        // The old Era I entrance at (3,0) is now a standard furnished room
+        if (space.row === 3 && space.col === 0) return { ...space, state: 'FURNISHED' as const, openSides: ['top', 'right', 'left'] as ("top" | "bottom" | "left" | "right")[] };
+        
         if (space.row === 0 && space.col === 0) return { ...space, openSides: ['bottom', 'right', 'left'] as ("top" | "bottom" | "left" | "right")[] };
         if (space.row === 1 && space.col === 0) return { ...space, openSides: ['top', 'bottom', 'right', 'left'] as ("top" | "bottom" | "left" | "right")[] };
         if (space.row === 2 && space.col === 0) return { ...space, openSides: ['top', 'bottom', 'right', 'left'] as ("top" | "bottom" | "left" | "right")[] };
-        if (space.row === 3 && space.col === 0) return { ...space, openSides: ['top', 'right', 'left'] as ("top" | "bottom" | "left" | "right")[] };
         return space;
       });
 
@@ -1348,12 +1370,13 @@ export default function App() {
         if (prev.uiState.excavationsLeft <= 0) return prev;
 
         const isUndermining = prev.uiState.activeActionTile === 'undermining';
-        const accessible = getAccessibleSpaces(prev.cave, prev.walls, isUndermining);
+        const accessible = getAccessibleSpaces(prev.cave, prev.walls, isUndermining, prev.era);
         if (!accessible.includes(spaceId)) return prev;
 
         const spaceIndex = prev.cave.findIndex(s => s.id === spaceId);
         const space = prev.cave[spaceIndex];
 
+        // Era II entrance at (3, -1) transitions to a standard empty room after excavation.
         nextState.cave[spaceIndex] = { ...space, state: 'EMPTY', tile: undefined };
 
         if (space.tile) {
@@ -1686,7 +1709,7 @@ export default function App() {
     });
   };
 
-  const accessibleSpaces = gameState.uiState.mode === 'EXCAVATE' ? getAccessibleSpaces(gameState.cave, gameState.walls, gameState.uiState.activeActionTile === 'undermining') : [];
+  const accessibleSpaces = gameState.uiState.mode === 'EXCAVATE' ? getAccessibleSpaces(gameState.cave, gameState.walls, gameState.uiState.activeActionTile === 'undermining', gameState.era) : [];
 
   const handleUndoAction = () => {
     console.log("Attempting to undo action. Snapshot exists:", !!gameState.uiState.undoSnapshot);
