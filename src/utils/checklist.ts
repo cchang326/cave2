@@ -151,7 +151,7 @@ export function generateChecklistForAction(actionId: string, board: ActionBoardS
         { id: 'r2', text: 'Furnish a cavern (pay room cost only)', actionType: 'FURNISH', optional: true, status: 'TODO', data: { count: 1 } }
       ];
       break;
-    case 'decoration':
+    case 'era_2_decoration':
       items = [
         {
           id: 'dec_choice',

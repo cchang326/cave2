@@ -1053,13 +1053,13 @@ export default function App() {
       const shuffledEraIITiles = [...eraIITiles].sort(() => Math.random() - 0.5);
 
       const eraIICoords = [
-        { row: 0, col: -1, state: 'FACE_DOWN' as const, openSides: ['bottom'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
-        { row: 1, col: -3, state: 'FACE_DOWN' as const, openSides: ['right'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
-        { row: 1, col: -2, state: 'FACE_DOWN' as const, openSides: ['left', 'right', 'bottom'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
-        { row: 1, col: -1, state: 'FACE_DOWN' as const, openSides: ['top', 'left', 'bottom', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
-        { row: 2, col: -2, state: 'FACE_DOWN' as const, openSides: ['top', 'bottom', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
-        { row: 2, col: -1, state: 'FACE_DOWN' as const, openSides: ['top', 'bottom', 'left', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
-        { row: 3, col: -2, state: 'FACE_DOWN' as const, openSides: ['top', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: undefined },
+        { row: 0, col: -1, state: 'FACE_DOWN' as const, openSides: ['bottom'] as ("top" | "bottom" | "left" | "right")[], tile: shuffledEraIITiles.shift() },
+        { row: 1, col: -3, state: 'FACE_DOWN' as const, openSides: ['right'] as ("top" | "bottom" | "left" | "right")[], tile: shuffledEraIITiles.shift() },
+        { row: 1, col: -2, state: 'FACE_DOWN' as const, openSides: ['left', 'right', 'bottom'] as ("top" | "bottom" | "left" | "right")[], tile: shuffledEraIITiles.shift() },
+        { row: 1, col: -1, state: 'FACE_DOWN' as const, openSides: ['top', 'left', 'bottom', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: shuffledEraIITiles.shift() },
+        { row: 2, col: -2, state: 'FACE_DOWN' as const, openSides: ['top', 'bottom', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: shuffledEraIITiles.shift() },
+        { row: 2, col: -1, state: 'FACE_DOWN' as const, openSides: ['top', 'bottom', 'left', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: shuffledEraIITiles.shift() },
+        { row: 3, col: -2, state: 'FACE_DOWN' as const, openSides: ['top', 'right'] as ("top" | "bottom" | "left" | "right")[], tile: shuffledEraIITiles.shift() },
         { row: 3, col: -1, state: 'FACE_DOWN' as const, openSides: ['top', 'left', 'right', 'bottom'] as ("top" | "bottom" | "left" | "right")[], tile: shuffledEraIITiles.shift() }
       ];
 

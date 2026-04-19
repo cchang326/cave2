@@ -21,7 +21,7 @@ export const ActionBoard: React.FC<Props> = ({
   onTakeAction 
 }) => {
   const renderActionTile = (action: any, isUsed: boolean, isActive: boolean, additionalAction: any) => (
-    <div key={action.id} className="flex flex-col gap-2 flex-shrink-0 snap-start">
+    <div key={`action-${action.id}-${action.era}`} className="flex flex-col gap-2 flex-shrink-0 snap-start">
       <button
         disabled={disabled || isUsed || isActive}
         onClick={() => onTakeAction(action.id)}

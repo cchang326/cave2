@@ -26,7 +26,7 @@ export const STAGE_4_ACTIONS: ActionTile[] = [
 
 export const ERA_II_ACTIONS: ActionTile[] = [
   { 
-    id: 'decoration', 
+    id: 'era_2_decoration', 
     name: 'Decoration', 
     stage: 4, 
     description: 'Pay either 5 food or 1 gold to furnish a cavern.', 
