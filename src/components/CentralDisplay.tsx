@@ -3,7 +3,7 @@ import { RoomTile, GoodsState, CaveSpace } from '../types/game';
 import { WallRequirementIcon } from './WallRequirementIcon';
 import { IconicDescription } from './IconicDescription';
 import { RoomTileComponent } from './RoomTileComponent';
-import { TreePine, Wheat, Leaf, Drumstick, Coins, Shield, Lock, LockOpen, ListChecks, Undo2 } from 'lucide-react';
+import { TreePine, Wheat, Leaf, Drumstick, Coins, Shield, Lock, LockOpen, ListChecks, Undo2, Layers } from 'lucide-react';
 import { StoneIcon } from './StoneIcon';
 import { isValidRoomPlacement } from '../utils/walls';
 
@@ -20,6 +20,9 @@ interface Props {
   fixTileLocations: boolean;
   isChecklistCollapsed: boolean;
   checklistLength: number;
+  fdp1Count: number;
+  fdp2Count: number;
+  era: 1 | 2;
   onRoomClick?: (id: string) => void;
   onToggleHighlight: () => void;
   onToggleFixTileLocations: () => void;
@@ -83,6 +86,17 @@ const renderCost = (cost: RoomTile['cost']): ReactNode => {
   );
 };
 
+const PileIcon: React.FC<{ era: 1 | 2 }> = ({ era }) => (
+  <div className="relative w-4 h-4 flex items-center justify-center">
+    <div className="absolute inset-0 flex items-end justify-center pointer-events-none">
+      <Layers className="w-4 h-4 text-stone-500 scale-y-50 origin-bottom opacity-60" />
+    </div>
+    <span className="relative text-[11px] font-bold font-serif text-stone-400 leading-none select-none z-10 translate-y-[-1px]">
+      {era === 1 ? 'I' : 'II'}
+    </span>
+  </div>
+);
+
 export const CentralDisplay: React.FC<Props> = ({ 
   tiles, 
   goods,
@@ -96,6 +110,9 @@ export const CentralDisplay: React.FC<Props> = ({
   fixTileLocations,
   isChecklistCollapsed,
   checklistLength,
+  fdp1Count,
+  fdp2Count,
+  era,
   onRoomClick,
   onToggleHighlight,
   onToggleFixTileLocations,
@@ -173,7 +190,24 @@ export const CentralDisplay: React.FC<Props> = ({
             </button>
           )}
         </div>
-        <div className="flex-1" />
+        
+        <div className="flex-1 flex justify-center items-center gap-4">
+          <div className="flex items-center gap-1.5" title="Era I Draw Pile">
+            <PileIcon era={1} />
+            <span className="text-stone-400 font-mono text-sm leading-none tabular-nums font-bold">
+              {fdp1Count}
+            </span>
+          </div>
+          {era === 2 && (
+            <div className="flex items-center gap-1.5" title="Era II Draw Pile">
+              <PileIcon era={2} />
+              <span className="text-stone-400 font-mono text-sm leading-none tabular-nums font-bold">
+                {fdp2Count}
+              </span>
+            </div>
+          )}
+        </div>
+
         <div className="w-24 flex items-center justify-end gap-1">
           <button 
             onClick={onToggleFixTileLocations}

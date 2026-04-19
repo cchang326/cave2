@@ -43,30 +43,28 @@ export const SettingsPanel: React.FC<Props> = ({ settingsState, setSettingsState
 
   const handleDebugExcavateAll = () => {
     setGameState(prev => {
-      const hiddenTiles: RoomTile[] = [];
+      const currentEra = prev.era;
       
-      // 1. Excavate all FACE_DOWN spaces to EMPTY and collect their tiles
+      // 1. Excavate FACE_DOWN spaces to EMPTY if they contain a tile from current or previous era
       const newCave = prev.cave.map(space => {
-        if (space.state === 'FACE_DOWN') {
-          if (space.tile) {
-            hiddenTiles.push(space.tile);
-          }
+        if (space.state === 'FACE_DOWN' && space.tile && space.tile.era <= currentEra) {
           return { ...space, state: 'EMPTY' as const, tile: undefined };
         }
         return space;
       });
 
-      // 2. Find all tiles currently furnished in the cave
-      const tilesInCave = new Set(
+      // 2. Find all tiles currently furnished in the cave or still face down
+      const unavailableTiles = new Set(
         newCave
-          .filter(s => s.state === 'FURNISHED' || s.state === 'ENTRANCE')
+          .filter(s => (s.state === 'FURNISHED' || s.state === 'ENTRANCE' || s.state === 'FACE_DOWN'))
           .filter(s => s.tile)
           .map(s => s.tile!.id)
       );
 
-      // 3. Central display should have its current tiles + hidden tiles from cave + all tiles from deck
-      // We filter by ROOM_TILES to ensure we have all possible tiles that are NOT in the cave
-      const newCentralDisplay = ROOM_TILES.filter(tile => !tilesInCave.has(tile.id));
+      // 3. Central display should have all tiles from ROOM_TILES up to current era that are not in the cave
+      const newCentralDisplay = ROOM_TILES.filter(tile => 
+        tile.era <= currentEra && !unavailableTiles.has(tile.id)
+      );
 
       return {
         ...prev,
@@ -74,7 +72,7 @@ export const SettingsPanel: React.FC<Props> = ({ settingsState, setSettingsState
         cave: newCave,
         centralDisplay: newCentralDisplay,
         fdp1: [],
-        fdp2: []
+        fdp2: currentEra === 1 ? prev.fdp2 : []
       };
     });
   };

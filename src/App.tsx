@@ -1996,6 +1996,9 @@ export default function App() {
                 fixTileLocations={settingsState.fixTileLocations}
                 isChecklistCollapsed={isChecklistCollapsed}
                 checklistLength={gameState.uiState.checklist.length}
+                fdp1Count={gameState.fdp1.length}
+                fdp2Count={gameState.fdp2.length}
+                era={gameState.era}
                 onRoomClick={handleRoomClick}
                 onToggleHighlight={handleToggleHighlight}
                 onToggleFixTileLocations={() => setSettingsState(prev => ({ ...prev, fixTileLocations: !prev.fixTileLocations }))}
