@@ -8,9 +8,12 @@ interface Props {
   large?: boolean;
 }
 
-export const getIconicString = (item: ChecklistItem): string => {
+export const getIconicString = (item: ChecklistItem, amount?: number): string => {
   const { actionType, data } = item;
   let parts: string[] = [];
+
+  const displayAmt = amount !== undefined ? amount : (data?.finalAmount !== undefined ? data.finalAmount : 1);
+  const amtValue = displayAmt;
 
   // Handle payBefore/condition prefixes
   if (data?.payBefore) {
@@ -37,8 +40,10 @@ export const getIconicString = (item: ChecklistItem): string => {
           .join(' ');
         parts.push(goods);
       } else if (data?.goods) {
+        // Only prefix with + if there's no preceding action/cost/condition
+        const prefix = parts.length === 0 ? '+' : '';
         const goods = Object.entries(data.goods)
-          .map(([good, amt]) => `+${amt}[${good}]`)
+          .map(([good, amt]) => `${prefix}${amt}[${good}]`)
           .join(' ');
         parts.push(goods);
       }
@@ -80,16 +85,29 @@ export const getIconicString = (item: ChecklistItem): string => {
       parts.push(`${data?.amount} {diff goods} [arrow-right]`);
       break;
 
+    case 'QUANTITY':
+      if (data?.costPer && data?.gainPer) {
+        const costs = Object.entries(data.costPer)
+          .map(([good, amt]) => `${(amt as number) * amtValue}[${good}]`)
+          .join(' ');
+        const gains = Object.entries(data.gainPer)
+          .map(([good, amt]) => `${(amt as number) * amtValue}[${good}]`)
+          .join(' ');
+        parts.push(`${costs} [arrow-right] ${gains}`);
+      }
+      break;
+
     default:
       return item.text;
   }
 
-  // Handle gainAfter suffix
+  // Handle gainAfter suffix (bonuses/passive triggers)
   if (data?.gainAfter) {
     const gains = Object.entries(data.gainAfter)
-      .map(([good, amt]) => `+${amt}[${good}]`)
+      .map(([good, amt]) => `${amt}[${good}]`)
       .join(' ');
-    parts.push(`[arrow-right] ${gains}`);
+    // Use : for passive/bonus effects as requested
+    parts.push(`: ${gains}`);
   }
 
   return parts.join(' ');
@@ -114,6 +132,22 @@ export const getIconicChoiceLabel = (option: any): string => {
   return parts.join(' ');
 };
 
-export const ChecklistIconRenderer: React.FC<Props> = ({ item, className = "", large = false }) => {
-  return <IconicDescription description={getIconicString(item)} className={className} large={large} />;
+export const ChecklistIconRenderer: React.FC<Props & { amount?: number }> = ({ item, className = "", large = false, amount }) => {
+  return (
+    <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 ${className}`}>
+      <IconicDescription description={getIconicString(item, amount)} large={large} />
+      {item.passiveGains?.map((pg, idx) => (
+        <div 
+          key={idx}
+          title={`${pg.name} effect`}
+          className="bg-blue-100/90 border border-blue-300 px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1 animate-in fade-in zoom-in-95 duration-300"
+        >
+          <IconicDescription 
+            description={Object.entries(pg.goods).map(([good, amt]) => `+${amt}[${good}]`).join(' ')} 
+            large={large} 
+          />
+        </div>
+      ))}
+    </div>
+  );
 };

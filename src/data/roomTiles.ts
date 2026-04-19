@@ -207,7 +207,7 @@ export const ROOM_TILES: RoomTile[] = [
     wallRequirement: { min: 3, max: 3, configuration: 'any' },
     trigger: 'action',
     effectDescription: 'Pay 1 gold to excavate once',
-    iconicDescription: '1[gold][arrow-right]+[pickaxe]',
+    iconicDescription: '1[gold][arrow-right][pickaxe]',
     era: 1,
     excavatable: true
   },

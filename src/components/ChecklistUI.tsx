@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChecklistItem, GoodsState } from '../types/game';
-import { Check, X, Play, ChevronRight, Undo2, Square, CheckSquare, Circle, Info, Drumstick, TreePine, Wheat, Leaf, Coins, GripVertical, ListChecks } from 'lucide-react';
+import { Check, X, Play, ChevronRight, Undo2, Square, CheckSquare, Circle, Info, Drumstick, TreePine, Wheat, Leaf, Coins, GripVertical, ListChecks, Minus, Plus } from 'lucide-react';
 import { StoneIcon } from './StoneIcon';
 import { ChecklistIconRenderer, getIconicChoiceLabel } from './ChecklistIconRenderer';
 import { IconicDescription } from './IconicDescription';
@@ -11,7 +11,7 @@ interface Props {
   goods: GoodsState;
   showIconicDescription?: boolean;
   isCollapsed: boolean;
-  onExecute: (id: string) => void;
+  onExecute: (id: string, isManual?: boolean, amount?: number) => void;
   onSkip: (id: string) => void;
   onChoose: (id: string, optionIndex: number) => void;
   onFinishTurn: () => void;
@@ -60,6 +60,8 @@ export const ChecklistUI: React.FC<Props> = ({
   onCancel,
   onToggle
 }) => {
+  const [quantities, setQuantities] = React.useState<Record<string, number>>({});
+
   if (isCollapsed) return null;
 
   const allDoneOrSkipped = checklist.every(item => item.status === 'DONE' || item.status === 'SKIPPED');
@@ -127,9 +129,9 @@ export const ChecklistUI: React.FC<Props> = ({
                   className="absolute top-1/2 left-0 h-[1.5px] bg-stone-600/40 -translate-y-1/2 pointer-events-none z-10"
                 />
               )}
-              <div className="flex justify-between items-center gap-3 relative">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex-shrink-0 flex items-center justify-center w-4">
+              <div className="flex justify-between items-start gap-4 relative">
+                <div className="flex items-start gap-3 flex-1 min-w-0 pt-0.5">
+                  <div className="flex-shrink-0 flex items-center justify-center w-4 mt-1">
                     {item.status === 'DONE' && <CheckSquare className="w-4 h-4 text-green-600" />}
                     {item.status === 'SKIPPED' && <X className="w-4 h-4 text-stone-400" />}
                     {item.status === 'DOING' && <Play className="w-4 h-4 text-orange-600 animate-game-pulse" />}
@@ -142,9 +144,27 @@ export const ChecklistUI: React.FC<Props> = ({
                   <div className="flex flex-col min-w-0 relative">
                     <div className="font-medium text-sm leading-tight flex items-center transition-all">
                       {showIconicDescription ? (
-                        <ChecklistIconRenderer item={item} large={true} />
+                        item.source?.type === 'passive' ? (
+                          <div 
+                            title={`${item.source.name} effect`}
+                            className="bg-blue-100/80 border border-blue-300 px-2 py-1 rounded shadow-sm flex items-center gap-2"
+                          >
+                             <ChecklistIconRenderer item={item} large={true} amount={quantities[item.id]} />
+                          </div>
+                        ) : (
+                          <ChecklistIconRenderer item={item} large={true} amount={quantities[item.id]} />
+                        )
                       ) : (
-                        item.text
+                        item.source?.type === 'passive' ? (
+                          <span 
+                            title={`${item.source.name} effect`}
+                            className="bg-blue-100/50 border-b border-blue-300 px-1"
+                          >
+                            {item.text}
+                          </span>
+                        ) : (
+                          item.text
+                        )
                       )}
                     </div>
                     {!showIconicDescription && item.data?.gainAfter && Object.keys(item.data.gainAfter).length > 0 && (
@@ -161,7 +181,7 @@ export const ChecklistUI: React.FC<Props> = ({
                   </div>
                 </div>
                 
-                {item.status === 'TODO' && item.actionType !== 'CHOICE' && (
+                {item.status === 'TODO' && item.actionType !== 'CHOICE' && item.actionType !== 'QUANTITY' && (
                   <div className="flex gap-2">
                     <button 
                       onClick={() => onExecute(item.id)}
@@ -184,6 +204,68 @@ export const ChecklistUI: React.FC<Props> = ({
                         Skip
                       </button>
                     )}
+                  </div>
+                )}
+
+                {item.status === 'TODO' && item.actionType === 'QUANTITY' && (
+                  <div className="flex flex-col items-end gap-2 shrink-0">
+                    <div className="flex items-center gap-2 bg-stone-200 rounded-md p-1 border border-stone-300">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const current = quantities[item.id] ?? 1;
+                          if (current > 0) {
+                            setQuantities(prev => ({ ...prev, [item.id]: current - 1 }));
+                          }
+                        }}
+                        className="p-1 hover:bg-white rounded transition-colors text-stone-600 active:scale-90"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="w-6 text-center text-sm font-bold text-stone-900 leading-none">
+                        {quantities[item.id] ?? 1}
+                      </span>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const current = quantities[item.id] ?? 1;
+                          
+                          // Calculate max based on resource
+                          let max = 99;
+                          if (item.data.costPer) {
+                            for (const [res, cost] of Object.entries(item.data.costPer)) {
+                              const available = goods[res as keyof GoodsState] || 0;
+                              max = Math.min(max, Math.floor(available / (cost as number)));
+                            }
+                          }
+
+                          if (current < max) {
+                            setQuantities(prev => ({ ...prev, [item.id]: current + 1 }));
+                          }
+                        }}
+                        className="p-1 hover:bg-white rounded transition-colors text-stone-600 active:scale-90"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <button 
+                        onClick={() => onExecute(item.id, true, quantities[item.id] ?? 1)}
+                        disabled={anyDoing}
+                        className="px-3 py-1 bg-orange-600 hover:bg-orange-500 disabled:bg-stone-600 disabled:text-stone-400 text-white text-[10px] font-bold rounded transition-colors uppercase"
+                      >
+                        Confirm
+                      </button>
+                      {item.optional && (
+                        <button 
+                          onClick={() => onSkip(item.id)}
+                          disabled={anyDoing}
+                          className="px-2 py-1 bg-stone-600 hover:bg-stone-500 disabled:bg-stone-700 disabled:text-stone-500 text-white text-[10px] font-bold rounded transition-colors uppercase"
+                        >
+                          Skip
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
 

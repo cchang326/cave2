@@ -135,17 +135,7 @@ export const IconicDescription: React.FC<Props> = ({ description, className = ""
       continue;
     }
 
-    if (trimmed === '+' && lastWasTrigger) {
-      continue; // Skip the plus sign after a trigger
-    }
-
     elements.push(renderToken(token, i));
-
-    if (trimmed === '[arrow-right]' || trimmed === ':' || trimmed === '{:}' || trimmed === '{[arrow-right]}') {
-      lastWasTrigger = true;
-    } else if (trimmed !== '') {
-      lastWasTrigger = false;
-    }
   }
 
   return (

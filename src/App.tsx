@@ -546,7 +546,7 @@ export default function App() {
     }));
   };
 
-  const handleExecuteChecklist = (id: string, isManual: boolean = true) => {
+  const handleExecuteChecklist = (id: string, isManual: boolean = true, amount: number = 0) => {
     setGameState(prev => {
       const next = { ...prev, conversionHistory: [] };
       next.uiState.hasInteractedWithChecklist = isManual || next.uiState.hasInteractedWithChecklist;
@@ -640,6 +640,30 @@ export default function App() {
         }
         next.goods = subtractGoods(next.goods, item.data.goods);
         updatedItem.status = 'DONE';
+      } else if (item.actionType === 'QUANTITY') {
+        const amt = amount || 0;
+        if (amt > 0) {
+          if (item.data.costPer) {
+            const totalCost: Partial<GoodsState> = {};
+            for (const [res, cost] of Object.entries(item.data.costPer)) {
+              totalCost[res as keyof GoodsState] = (cost as number) * amt;
+            }
+            if (!canAfford(next.goods, totalCost)) {
+              showNotification("Not enough resources for this quantity!", 'error');
+              return prev;
+            }
+            next.goods = subtractGoods(next.goods, totalCost);
+          }
+          if (item.data.gainPer) {
+            const totalGain: Partial<GoodsState> = {};
+            for (const [res, gain] of Object.entries(item.data.gainPer)) {
+              totalGain[res as keyof GoodsState] = (gain as number) * amt;
+            }
+            next.goods = addGoods(next.goods, totalGain);
+          }
+        }
+        updatedItem.data = { ...updatedItem.data, finalAmount: amt };
+        updatedItem.status = 'DONE';
       } else if (item.actionType === 'EXCAVATE') {
         next.uiState.mode = 'EXCAVATE';
         next.uiState.excavationsLeft = item.data.count;
@@ -672,6 +696,13 @@ export default function App() {
           if (checkItem.id !== item.id && checkItem.exclusiveGroup === item.exclusiveGroup && checkItem.status === 'TODO') {
             checklist[idx] = { ...checkItem, status: 'SKIPPED' };
           }
+        });
+      }
+
+      // Automatically grant passive gains if they exist
+      if (updatedItem.status === 'DONE' && updatedItem.passiveGains) {
+        updatedItem.passiveGains.forEach(pg => {
+          next.goods = addGoods(next.goods, pg.goods);
         });
       }
 
@@ -853,6 +884,14 @@ export default function App() {
         draftingScore: prev.uiState.draftingScore,
         undoSnapshot: undefined
       };
+
+      // If Era I just finished, cache the score breakdown now
+      if (nextMode === 'GAME_OVER' && nextState.era === 1) {
+        const scoreDetails = calculateScore(nextState);
+        nextState.era1Score = scoreDetails.totalVP;
+        nextState.era1RoomVP = scoreDetails.baseVP;
+        nextState.era1GoldVP = scoreDetails.goldVP;
+      }
 
       return nextState;
     });
@@ -1092,17 +1131,9 @@ export default function App() {
         totalRounds: 11
       };
 
-      const scoreDetails = calculateScore(prev);
-      const era1Score = scoreDetails.totalVP;
-      const era1RoomVP = scoreDetails.baseVP;
-      const era1GoldVP = scoreDetails.goldVP;
-
       return {
         ...prev,
         era: 2,
-        era1Score,
-        era1RoomVP,
-        era1GoldVP,
         uiState: {
           ...prev.uiState,
           gameType: prev.uiState.gameType === 'ERA_II_DRAFT' ? 'ERA_II_DRAFT' : 'ERA_II',
@@ -1608,25 +1639,19 @@ export default function App() {
         const itemIndex = checklist.findIndex(i => i.actionType === 'BUILD_WALL' && i.status === 'DOING');
         
         if (itemIndex !== -1) {
-          checklist[itemIndex] = { 
-            ...checklist[itemIndex], 
-            data: { ...checklist[itemIndex].data, count: nextState.uiState.wallsLeft } 
-          };
+          const buildWallItem = { ...checklist[itemIndex] };
+          buildWallItem.data = { ...buildWallItem.data, count: nextState.uiState.wallsLeft };
 
           // Dungeon: Each time you build a wall, also gain 2 gold.
           const hasDungeon = nextState.cave.some(s => s.state === 'FURNISHED' && s.tile?.id === 'dungeon');
           if (hasDungeon) {
-            const dungeonItem = {
-              id: `dungeon_${Date.now()}_${wallId}`,
-              text: 'Passive: Dungeon — Gain 2 gold',
-              actionType: 'GAIN' as const,
-              status: 'TODO' as const,
-              optional: true,
-              data: { goods: { gold: 2 } }
-            };
-            // Insert it right after the current BUILD_WALL item
-            checklist.splice(itemIndex + 1, 0, dungeonItem);
+            if (!buildWallItem.passiveGains) buildWallItem.passiveGains = [];
+            buildWallItem.passiveGains.push({
+              name: 'Dungeon',
+              goods: { gold: 2 }
+            });
           }
+          checklist[itemIndex] = buildWallItem;
         }
         
         nextState.uiState.checklist = checklist;

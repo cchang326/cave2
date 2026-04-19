@@ -67,7 +67,7 @@ export interface ActionBoardState {
   totalRounds: number;
 }
 
-export type ChecklistActionType = 'EXCAVATE' | 'FURNISH' | 'ROOM_ACTION' | 'GAIN' | 'PAY' | 'CHOICE' | 'BUILD_WALL' | 'REMOVE_WALL' | 'PAY_DYNAMIC' | 'GAIN_CALCULATED';
+export type ChecklistActionType = 'EXCAVATE' | 'FURNISH' | 'ROOM_ACTION' | 'GAIN' | 'PAY' | 'CHOICE' | 'BUILD_WALL' | 'REMOVE_WALL' | 'PAY_DYNAMIC' | 'GAIN_CALCULATED' | 'QUANTITY';
 
 export interface ChecklistItem {
   id: string;
@@ -77,6 +77,14 @@ export interface ChecklistItem {
   optional: boolean;
   exclusiveGroup?: string;
   data?: any;
+  source?: {
+    type: 'passive';
+    name: string;
+  };
+  passiveGains?: {
+    goods: Partial<GoodsState>;
+    name: string;
+  }[];
 }
 
 export type GameType = 'ERA_I' | 'ERA_II' | 'ERA_II_DRAFT';
