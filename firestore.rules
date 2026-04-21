@@ -81,12 +81,11 @@ service cloud.firestore {
     }
 
     function isValidGameLog(data) {
-      return data.keys().hasAll(['userId', 'gameId', 'score', 'gameType', 'gameState', 'timestamp', 'cheatsUsed']) &&
+      return data.keys().hasAll(['userId', 'gameId', 'score', 'gameType', 'timestamp', 'cheatsUsed']) &&
              data.userId is string &&
              data.gameId is string &&
              data.score is number &&
              data.gameType is string &&
-             data.gameState is map &&
              data.timestamp is timestamp &&
              data.cheatsUsed is bool;
     }

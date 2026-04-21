@@ -51,11 +51,11 @@
         "userId": { "type": "string" },
         "gameId": { "type": "string" },
         "score": { "type": "integer" },
-        "gameState": { "type": "object" },
+        "gameType": { "type": "string" },
         "timestamp": { "type": "string", "format": "date-time" },
         "cheatsUsed": { "type": "boolean" }
       },
-      "required": ["userId", "gameId", "score", "gameState", "timestamp", "cheatsUsed"]
+      "required": ["userId", "gameId", "score", "gameType", "timestamp", "cheatsUsed"]
     },
     "GlobalStats": {
       "title": "Global Stats",

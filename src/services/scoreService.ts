@@ -22,7 +22,6 @@ export interface HighScoreEntry {
   score: number;
   timestamp: any;
   cheatsUsed: boolean;
-  gameState: GameState;
   gameType: string;
 }
 
@@ -58,7 +57,6 @@ export const scoreService = {
         gameId: gameId,
         score: score,
         gameType: gameType,
-        gameState: JSON.parse(JSON.stringify(state)),
         timestamp: serverTimestamp(),
         cheatsUsed: state.cheatsUsed
       }, { merge: true });
