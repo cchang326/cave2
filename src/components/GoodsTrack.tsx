@@ -24,6 +24,7 @@ interface Props {
   onUndoExchange?: () => void;
   canUndoExchange?: boolean;
   era: 1 | 2;
+  suppressSounds?: boolean;
 }
 
 interface FloatState {
@@ -42,21 +43,29 @@ const GoodItem: React.FC<{
   muted: boolean;
   skipNextSound: boolean;
   onSoundPlayed: () => void;
-}> = ({ good, value, icon, onExchange, onUndoExchange, canUndoExchange, isExchangeable, muted, skipNextSound, onSoundPlayed }) => {
-  const prevValueRef = useRef(value);
+  suppressSounds?: boolean;
+}> = ({ good, value, icon, onExchange, onUndoExchange, canUndoExchange, isExchangeable, muted, skipNextSound, onSoundPlayed, suppressSounds }) => {
+  const prevValueRef = useRef<number | null>(null);
   const [floats, setFloats] = useState<FloatState[]>([]);
   const idCounter = useRef(0);
 
   useEffect(() => {
+    // If null, this is the initial mount. Set the ref and skip logic.
+    if (prevValueRef.current === null) {
+      prevValueRef.current = value;
+      return;
+    }
+
     const prev = prevValueRef.current;
     if (prev !== value) {
       const diff = value - prev;
-      const id = idCounter.current++;
       
+      // Floating animation still happens even if sound is suppressed
+      const id = idCounter.current++;
       setFloats(current => [...current, { id, diff }]);
 
-      // Sound effect
-      if (!muted && !skipNextSound) {
+      // Sound effect - logic checked here
+      if (!muted && !skipNextSound && !suppressSounds) {
         const audio = new Audio(diff > 0 ? SOUNDS.gain : SOUNDS.lose);
         audio.volume = 0.3;
         audio.play().catch(() => {}); // Ignore autoplay blocks
@@ -72,7 +81,7 @@ const GoodItem: React.FC<{
       }, 2000);
     }
     prevValueRef.current = value;
-  }, [value, muted, skipNextSound, onSoundPlayed]);
+  }, [value, muted, skipNextSound, onSoundPlayed, suppressSounds]);
 
   return (
     <div className="flex items-center bg-stone-900/80 px-1.5 py-0.5 rounded-md border border-stone-700/50 w-full justify-between group relative h-8">
@@ -141,7 +150,7 @@ const GoodItem: React.FC<{
   );
 };
 
-export const GoodsTrack: React.FC<Props & { muted: boolean }> = ({ goods, onExchange, onUndoExchange, canUndoExchange, era, muted }) => {
+export const GoodsTrack: React.FC<Props & { muted: boolean }> = ({ goods, onExchange, onUndoExchange, canUndoExchange, era, muted, suppressSounds }) => {
   const [skipSoundFor, setSkipSoundFor] = useState<string | null>(null);
   const iconSize = "w-[18px] h-[18px]";
 
@@ -190,6 +199,7 @@ export const GoodsTrack: React.FC<Props & { muted: boolean }> = ({ goods, onExch
             muted={muted}
             skipNextSound={skipSoundFor === good || (skipSoundFor !== null && good === 'food')}
             onSoundPlayed={() => setSkipSoundFor(null)}
+            suppressSounds={suppressSounds}
           />
         ))}
       </div>

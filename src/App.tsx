@@ -374,6 +374,7 @@ export default function App() {
   const [showRestartConfirm, setShowRestartConfirm] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'info' | 'error' | 'success' } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSuppressingSounds, setIsSuppressingSounds] = useState(false);
   const [isChecklistCollapsed, setIsChecklistCollapsed] = useState(true);
   const autoExecutedRef = useRef<Set<string>>(new Set());
   const prevChecklistLengthRef = useRef(0);
@@ -1034,6 +1035,7 @@ export default function App() {
   };
 
   const transitionToEraII = () => {
+    setIsSuppressingSounds(true);
     setGameState(prev => {
       let currentFdp1 = [...prev.fdp1];
       
@@ -1175,6 +1177,7 @@ export default function App() {
         goods: eraIIGoods,
       };
     });
+    setTimeout(() => setIsSuppressingSounds(false), 300);
   };
 
   const handleRestartGame = () => {
@@ -1183,6 +1186,7 @@ export default function App() {
   };
 
   const handleLoadSave = (slotId: string, save?: GameSave) => {
+    setIsSuppressingSounds(true);
     if (save) {
       const loadedState = { ...save.state };
       // Migration for old saves missing gameType
@@ -1209,6 +1213,7 @@ export default function App() {
     }
     setCurrentSlotId(slotId);
     setShowLoadModal(false);
+    setTimeout(() => setIsSuppressingSounds(false), 300);
   };
 
   const checkCompletion = (nextState: GameState) => {
@@ -2003,6 +2008,7 @@ export default function App() {
                   canUndoExchange={gameState.conversionHistory.length > 0}
                   era={gameState.era}
                   muted={settingsState.isMuted}
+                  suppressSounds={isSuppressingSounds}
                 />
               </CaveBoard>
             </div>
