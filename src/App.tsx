@@ -364,7 +364,8 @@ function initializeGame(): GameState {
 export default function App() {
   const [gameState, setGameState] = useState<GameState>(initializeGame());
   const [settingsState, setSettingsState] = useState<SettingsState>({
-    fixTileLocations: true
+    fixTileLocations: true,
+    isMuted: false
   });
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -2001,6 +2002,7 @@ export default function App() {
                   onUndoExchange={handleUndoConversion}
                   canUndoExchange={gameState.conversionHistory.length > 0}
                   era={gameState.era}
+                  muted={settingsState.isMuted}
                 />
               </CaveBoard>
             </div>

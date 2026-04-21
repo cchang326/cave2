@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, X, Trophy, Github, ExternalLink } from 'lucide-react';
+import { Settings, X, Trophy, Github, ExternalLink, Volume2, VolumeX } from 'lucide-react';
 import { GameState, RoomTile } from '../types/game';
 import { MAX_RESOURCE_LIMIT, MAX_GOLD_WEAPON_LIMIT } from '../constants';
 import { calculateScore } from '../utils/scoring';
@@ -7,6 +7,7 @@ import { ROOM_TILES } from '../data/roomTiles';
 
 export interface SettingsState {
   fixTileLocations: boolean;
+  isMuted: boolean;
 }
 
 interface Props {
@@ -21,6 +22,13 @@ export const SettingsPanel: React.FC<Props> = ({ settingsState, setSettingsState
   const [isOpen, setIsOpen] = useState(false);
   
   const currentScore = calculateScore(gameState);
+
+  const handleToggleMute = () => {
+    setSettingsState(prev => ({
+      ...prev,
+      isMuted: !prev.isMuted
+    }));
+  };
 
   const handleMaxOutResources = () => {
     setGameState(prev => ({
@@ -144,18 +152,37 @@ export const SettingsPanel: React.FC<Props> = ({ settingsState, setSettingsState
         </button>
       </div>
       <div className="p-5 space-y-4">
-        <div className="flex items-center justify-between p-2 bg-stone-900/50 rounded-lg border border-stone-700">
-          <span className="text-xs font-bold text-stone-300 uppercase tracking-wider">Use Iconography</span>
-          <button
-            onClick={handleToggleIconicDescription}
-            className={`px-3 py-1 rounded-md text-[10px] font-black uppercase transition-all ${
-              gameState.uiState.showIconicDescription 
-                ? 'bg-green-600 text-white shadow-inner' 
-                : 'bg-stone-700 text-stone-400'
-            }`}
-          >
-            {gameState.uiState.showIconicDescription ? 'ON' : 'OFF'}
-          </button>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center justify-between p-2 bg-stone-900/50 rounded-lg border border-stone-700">
+            <span className="text-[10px] font-bold text-stone-300 uppercase tracking-tight">Iconography</span>
+            <button
+              onClick={handleToggleIconicDescription}
+              className={`px-2 py-1 rounded-md text-[9px] font-black uppercase transition-all ${
+                gameState.uiState.showIconicDescription 
+                  ? 'bg-green-600 text-white shadow-inner' 
+                  : 'bg-stone-700 text-stone-400'
+              }`}
+            >
+              {gameState.uiState.showIconicDescription ? 'ON' : 'OFF'}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between p-2 bg-stone-900/50 rounded-lg border border-stone-700">
+            <div className="flex items-center gap-1.5 overflow-hidden">
+              {settingsState.isMuted ? <VolumeX className="w-3 h-3 text-stone-500" /> : <Volume2 className="w-3 h-3 text-orange-400" />}
+              <span className="text-[10px] font-bold text-stone-300 uppercase tracking-tight">Sound</span>
+            </div>
+            <button
+              onClick={handleToggleMute}
+              className={`px-2 py-1 rounded-md text-[9px] font-black uppercase transition-all ${
+                !settingsState.isMuted 
+                  ? 'bg-green-600 text-white shadow-inner' 
+                  : 'bg-stone-700 text-stone-400'
+              }`}
+            >
+              {!settingsState.isMuted ? 'ON' : 'OFF'}
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center justify-between p-2 bg-stone-900/50 rounded-lg border border-stone-700">
