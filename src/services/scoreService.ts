@@ -14,6 +14,7 @@ import {
 import { GameState } from '../types/game';
 import { calculateScore } from '../utils/scoring';
 import { incrementGamesFinished } from './statsService';
+import { userService } from './userService';
 
 export interface HighScoreEntry {
   id: string;
@@ -62,8 +63,9 @@ export const scoreService = {
       }, { merge: true });
 
       if (isNewGameId) {
-        console.log('Incrementing global games finished count');
+        console.log('Incrementing global and user games finished count');
         await incrementGamesFinished();
+        await userService.incrementGamesFinished(user.uid);
       }
 
       // Pruning: Ensure the player only has top 10 high score entries for THIS game type

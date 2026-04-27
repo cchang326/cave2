@@ -9,7 +9,8 @@
         "displayName": { "type": "string" },
         "photoURL": { "type": "string", "format": "uri" },
         "lastLogin": { "type": "string", "format": "date-time" },
-        "role": { "type": "string", "enum": ["admin", "user"] }
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "gamesFinished": { "type": "integer" }
       },
       "required": ["email", "displayName", "lastLogin"]
     },

@@ -5,7 +5,8 @@ import { calculateScore } from '../utils/scoring';
 import { db, auth, handleFirestoreError, OperationType } from '../firebase';
 import { collection, query, orderBy, limit, onSnapshot, where } from 'firebase/firestore';
 import { subscribeToGlobalStats, GlobalStats } from '../services/statsService';
-import { Users, PlayCircle } from 'lucide-react';
+import { userService } from '../services/userService';
+import { Users, PlayCircle, Medal } from 'lucide-react';
 
 interface Props {
   gameState: GameState;
@@ -35,7 +36,15 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
   const [history, setHistory] = useState<GameHistoryEntry[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
+  const [userStats, setUserStats] = useState<{ gamesFinished: number } | null>(null);
   const [showCheats, setShowCheats] = useState(true);
+
+  useEffect(() => {
+    if (auth.currentUser) {
+      userService.getUserStats(auth.currentUser.uid).then(setUserStats);
+    }
+  }, [auth.currentUser]);
+
   const [activeTab, setActiveTab] = useState<string>(
     gameState.uiState.gameType === 'ERA_II_DRAFT' ? 'ERA_II' : (gameState.uiState.gameType || 'ERA_I')
   );
@@ -380,32 +389,56 @@ export const ScoreSummary: React.FC<Props> = ({ gameState, onPlayAgain, onClose,
             </div>
           )}
 
-          {globalStats && isAdmin && (
-            <div className="mt-8 pt-6 border-t border-stone-700">
-              <div className="flex items-center gap-3 mb-4">
-                <History className="w-5 h-5 text-stone-500" />
-                <h4 className="text-sm font-bold text-stone-400 uppercase tracking-wider">Global Statistics</h4>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-stone-900/40 p-3 rounded-lg border border-stone-700/50">
-                  <div className="flex items-center gap-2 text-stone-500 mb-1">
-                    <Users className="w-3.5 h-3.5" />
-                    <span className="text-[10px] font-bold uppercase tracking-tighter">Total Visits</span>
+          {((globalStats && isAdmin) || userStats) && (
+            <div className="mt-8 pt-6 border-t border-stone-700 space-y-6">
+              {userStats && (
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <Medal className="w-4 h-4 text-orange-400" />
+                    <h4 className="text-[11px] font-bold text-stone-400 uppercase tracking-widest">Your Career</h4>
                   </div>
-                  <div className="text-xl font-black text-stone-300 tracking-tight">
-                    {globalStats.visits.toLocaleString()}
-                  </div>
-                </div>
-                <div className="bg-stone-900/40 p-3 rounded-lg border border-stone-700/50">
-                  <div className="flex items-center gap-2 text-stone-500 mb-1">
-                    <PlayCircle className="w-3.5 h-3.5" />
-                    <span className="text-[10px] font-bold uppercase tracking-tighter">Games Finished</span>
-                  </div>
-                  <div className="text-xl font-black text-stone-300 tracking-tight">
-                    {globalStats.gamesFinished.toLocaleString()}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-stone-900/40 p-3 rounded-lg border border-orange-500/20">
+                      <div className="flex items-center gap-2 text-stone-500 mb-1">
+                        <PlayCircle className="w-3.5 h-3.5" />
+                        <span className="text-[9px] font-bold uppercase tracking-tight">Games Completed</span>
+                      </div>
+                      <div className="text-lg font-black text-orange-400 tracking-tight">
+                        {userStats.gamesFinished.toLocaleString()}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {globalStats && isAdmin && (
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <History className="w-4 h-4 text-stone-500" />
+                    <h4 className="text-[11px] font-bold text-stone-400 uppercase tracking-widest">Global Statistics</h4>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-stone-900/40 p-3 rounded-lg border border-stone-700/50">
+                      <div className="flex items-center gap-2 text-stone-500 mb-1">
+                        <Users className="w-3.5 h-3.5" />
+                        <span className="text-[9px] font-bold uppercase tracking-tight">Total Visits</span>
+                      </div>
+                      <div className="text-lg font-black text-stone-300 tracking-tight">
+                        {globalStats.visits.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="bg-stone-900/40 p-3 rounded-lg border border-stone-700/50">
+                      <div className="flex items-center gap-2 text-stone-500 mb-1">
+                        <PlayCircle className="w-3.5 h-3.5" />
+                        <span className="text-[9px] font-bold uppercase tracking-tight">Games Finished</span>
+                      </div>
+                      <div className="text-lg font-black text-stone-300 tracking-tight">
+                        {globalStats.gamesFinished.toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

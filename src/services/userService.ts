@@ -1,5 +1,5 @@
 import { db, handleFirestoreError, OperationType } from '../firebase';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, increment } from 'firebase/firestore';
 import { User } from 'firebase/auth';
 
 export const userService = {
@@ -24,6 +24,35 @@ export const userService = {
       await setDoc(userDocRef, userData, { merge: true });
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, path);
+    }
+  },
+
+  async incrementGamesFinished(uid: string): Promise<void> {
+    const path = `users/${uid}`;
+    try {
+      const userDocRef = doc(db, path);
+      await setDoc(userDocRef, { 
+        gamesFinished: increment(1) 
+      }, { merge: true });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, path);
+    }
+  },
+
+  async getUserStats(uid: string): Promise<{ gamesFinished: number } | null> {
+    const path = `users/${uid}`;
+    try {
+      const userDoc = await getDoc(doc(db, path));
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        return {
+          gamesFinished: data.gamesFinished || 0
+        };
+      }
+      return { gamesFinished: 0 };
+    } catch (error) {
+      handleFirestoreError(error, OperationType.GET, path);
+      return null;
     }
   },
 

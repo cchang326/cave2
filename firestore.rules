@@ -64,7 +64,8 @@ service cloud.firestore {
              data.displayName is string && data.displayName.size() < 100 &&
              data.lastLogin is timestamp &&
              (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() < 2048)) &&
-             (!('role' in data) || data.role in ['admin', 'user']);
+             (!('role' in data) || data.role in ['admin', 'user']) &&
+             (!('gamesFinished' in data) || (data.gamesFinished is int && data.gamesFinished >= 0));
     }
 
     function isValidGameSave(data) {
@@ -109,7 +110,10 @@ service cloud.firestore {
                       (!('role' in request.resource.data) || request.resource.data.role == 'user' || isAdmin());
       
       allow update: if isOwner(userId) && isValidUser(request.resource.data) && 
-                      (request.resource.data.role == resource.data.role || isAdmin());
+                      (request.resource.data.role == resource.data.role || isAdmin()) &&
+                      (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['gamesFinished']) || 
+                       request.resource.data.gamesFinished == (resource.data.get('gamesFinished', 0) + 1) ||
+                       isAdmin());
 
       match /gameSaves/{slotId} {
         allow read: if isOwner(userId) || isAdmin();
